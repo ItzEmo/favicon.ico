@@ -5,15 +5,20 @@ import { Marquee } from "@/components/marquee"
 import { CommunityCta } from "@/components/community-cta"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { connection } from "next/server"
+import { formatStat, getHomeStats } from "@/lib/stats"
 
-const STATS = [
-  { value: "12.4K", label: "Tracks Reviewed" },
-  { value: "3.1K", label: "Active Artists" },
-  { value: "480", label: "Arena Battles" },
-  { value: "96", label: "Realms Created" },
-]
+export default async function Page() {
+  await connection()
+  const { tracksReviewed, arenaBattles } = await getHomeStats()
 
-export default function Page() {
+  const STATS = [
+    { value: formatStat(tracksReviewed), label: "Tracks Reviewed" },
+    { value: "3.1K", label: "Active Artists" },
+    { value: formatStat(arenaBattles), label: "Arena Battles" },
+    { value: "96", label: "Realms Created" },
+  ]
+
   return (
     <>
       <HomeHero />
