@@ -5,9 +5,7 @@ import { SiteNav } from '@/components/site-nav'
 import { SiteFooter } from '@/components/site-footer'
 import { HoverMascot } from '@/components/hover-mascot'
 import { isAdmin } from '@/lib/admin-auth'
-import { cookies } from 'next/headers'
 import { UnlockGate } from '@/components/unlock-gate'
-import { UNLOCK_COOKIE } from '@/lib/unlock'
 import { getArtistLinks } from '@/lib/artist-links'
 import './globals.css'
 
@@ -54,8 +52,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const admin = await isAdmin()
-  const unlocked = (await cookies()).get(UNLOCK_COOKIE)?.value === '1'
-  const musicLinks = unlocked ? {} : await getArtistLinks().catch(() => ({}))
+  const musicLinks = await getArtistLinks().catch(() => ({}))
   return (
     <html
       lang="en"
@@ -68,7 +65,7 @@ export default async function RootLayout({
           <SiteFooter />
         </div>
         <HoverMascot />
-        {!unlocked && <UnlockGate links={musicLinks} />}
+        <UnlockGate links={musicLinks} />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

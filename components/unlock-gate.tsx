@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronsRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { UNLOCK_COOKIE } from '@/lib/unlock'
 import { UnlockMusic, hasArtistMusic } from '@/components/unlock-music'
 import type { ArtistLinks } from '@/lib/artist-links-types'
 
@@ -35,9 +34,6 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
   const unlock = useCallback(() => {
     setProgress(1)
     setPhase('unlocking')
-    // Session cookie: unlocked until the browser closes. SameSite=None so it
-    // also sticks inside the cross-site preview iframe.
-    document.cookie = `${UNLOCK_COOKIE}=1; path=/; SameSite=None; Secure`
     const site = document.getElementById('top')
     if (site) site.inert = false
     document.documentElement.style.overflow = ''
