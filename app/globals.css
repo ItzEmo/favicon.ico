@@ -1,0 +1,433 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-geist-sans), 'Geist Fallback';
+  --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: light;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.16 0.04 305);
+  --foreground: oklch(0.96 0.01 310);
+  --card: oklch(0.21 0.05 305);
+  --card-foreground: oklch(0.96 0.01 310);
+  --popover: oklch(0.21 0.05 305);
+  --popover-foreground: oklch(0.96 0.01 310);
+  --primary: oklch(0.62 0.21 300);
+  --primary-foreground: oklch(0.98 0.01 310);
+  --secondary: oklch(0.28 0.06 305);
+  --secondary-foreground: oklch(0.96 0.01 310);
+  --muted: oklch(0.26 0.05 305);
+  --muted-foreground: oklch(0.72 0.05 305);
+  --accent: oklch(0.7 0.18 330);
+  --accent-foreground: oklch(0.98 0.01 310);
+  --destructive: oklch(0.62 0.22 18);
+  --border: oklch(0.7 0.1 305 / 18%);
+  --input: oklch(0.7 0.1 305 / 22%);
+  --ring: oklch(0.62 0.21 300);
+  --chart-1: oklch(0.62 0.21 300);
+  --chart-2: oklch(0.7 0.18 330);
+  --chart-3: oklch(0.55 0.16 280);
+  --chart-4: oklch(0.75 0.14 310);
+  --chart-5: oklch(0.45 0.14 300);
+  --sidebar: oklch(0.18 0.04 305);
+  --sidebar-foreground: oklch(0.96 0.01 310);
+  --sidebar-primary: oklch(0.62 0.21 300);
+  --sidebar-primary-foreground: oklch(0.98 0.01 310);
+  --sidebar-accent: oklch(0.28 0.06 305);
+  --sidebar-accent-foreground: oklch(0.96 0.01 310);
+  --sidebar-border: oklch(0.7 0.1 305 / 18%);
+  --sidebar-ring: oklch(0.62 0.21 300);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
+    --background: oklch(0.16 0.04 305);
+    --foreground: oklch(0.96 0.01 310);
+    --card: oklch(0.21 0.05 305);
+    --card-foreground: oklch(0.96 0.01 310);
+    --popover: oklch(0.21 0.05 305);
+    --popover-foreground: oklch(0.96 0.01 310);
+    --primary: oklch(0.62 0.21 300);
+    --primary-foreground: oklch(0.98 0.01 310);
+    --secondary: oklch(0.28 0.06 305);
+    --secondary-foreground: oklch(0.96 0.01 310);
+    --muted: oklch(0.26 0.05 305);
+    --muted-foreground: oklch(0.72 0.05 305);
+    --accent: oklch(0.7 0.18 330);
+    --accent-foreground: oklch(0.98 0.01 310);
+    --destructive: oklch(0.62 0.22 18);
+    --border: oklch(0.7 0.1 305 / 18%);
+    --input: oklch(0.7 0.1 305 / 22%);
+    --ring: oklch(0.62 0.21 300);
+    --chart-1: oklch(0.62 0.21 300);
+    --chart-2: oklch(0.7 0.18 330);
+    --chart-3: oklch(0.55 0.16 280);
+    --chart-4: oklch(0.75 0.14 310);
+    --chart-5: oklch(0.45 0.14 300);
+    --sidebar: oklch(0.18 0.04 305);
+    --sidebar-foreground: oklch(0.96 0.01 310);
+    --sidebar-primary: oklch(0.62 0.21 300);
+    --sidebar-primary-foreground: oklch(0.98 0.01 310);
+    --sidebar-accent: oklch(0.28 0.06 305);
+    --sidebar-accent-foreground: oklch(0.96 0.01 310);
+    --sidebar-border: oklch(0.7 0.1 305 / 18%);
+    --sidebar-ring: oklch(0.62 0.21 300);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Neon sign shine — static logo with a soft pulsing glow, no rotation */
+@keyframes neon-shine {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px oklch(0.62 0.21 300 / 0.55))
+      drop-shadow(0 0 20px oklch(0.7 0.18 330 / 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px oklch(0.62 0.21 300 / 0.85))
+      drop-shadow(0 0 40px oklch(0.7 0.18 330 / 0.6));
+  }
+}
+
+.neon-shine {
+  animation: neon-shine 2.6s ease-in-out infinite;
+}
+
+.neon-glow {
+  filter: drop-shadow(0 0 10px oklch(0.62 0.21 300 / 0.7))
+    drop-shadow(0 0 28px oklch(0.7 0.18 330 / 0.45));
+}
+
+  @keyframes logo-spin {
+  from {
+  transform: rotateX(-8deg) rotateY(0deg);
+  }
+  to {
+  transform: rotateX(-8deg) rotateY(360deg);
+  }
+  }
+
+  /* Extruded 3D logo: stacked image slices along Z form a solid edge while spinning. */
+  .logo-3d-stage {
+  perspective: 500px;
+  }
+
+  /* No filter here — a filter on a preserve-3d element flattens its children. */
+  .logo-3d {
+  position: relative;
+  display: block;
+  transform-style: preserve-3d;
+  animation: logo-spin 6s linear infinite;
+  }
+
+  .logo-3d-layer {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  transform: translateZ(calc(var(--z) * 1px));
+  filter: brightness(0.32) saturate(1.4);
+  }
+
+  .logo-3d-face {
+  position: relative;
+  transform: translateZ(4px);
+  }
+
+  .logo-3d-back {
+  transform: translateZ(-4px);
+  filter: brightness(0.8);
+  }
+
+
+.mascot-stage {
+  transition:
+    transform 320ms cubic-bezier(0.5, 0, 0.75, 0),
+    opacity 320ms ease-in;
+}
+.mascot-stage[data-visible="false"] {
+  transform: translateY(110%);
+  opacity: 0;
+}
+.mascot-pose {
+  transform-origin: 50% 100%;
+}
+.mascot-bubble {
+  animation: mascot-bubble 420ms 180ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: 85% 100%;
+}
+@keyframes mascot-bubble {
+  from { opacity: 0; transform: scale(0.4) translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Home: pops up, then waves side to side */
+.mascot-wave { animation: mascot-rise 450ms cubic-bezier(0.34, 1.56, 0.64, 1) both, mascot-wave 1.1s 450ms ease-in-out infinite; }
+@keyframes mascot-rise { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes mascot-wave { 0%, 100% { rotate: 0deg; } 25% { rotate: -6deg; } 75% { rotate: 6deg; } }
+
+/* Queue: head-bob to the beat */
+.mascot-dj { animation: mascot-rise 400ms ease-out both, mascot-bob 0.48s 400ms ease-in-out infinite; }
+@keyframes mascot-bob { 0%, 100% { translate: 0 0; scale: 1 1; } 50% { translate: 0 6px; scale: 1.03 0.97; } }
+
+/* Submit: launches up like a rocket, then floats */
+.mascot-submit { animation: mascot-launch 700ms cubic-bezier(0.22, 1.4, 0.36, 1) both, mascot-float 2s 700ms ease-in-out infinite; }
+@keyframes mascot-launch {
+  0% { transform: translateY(100%) scale(0.8, 1.25); }
+  60% { transform: translateY(-30px) scale(0.95, 1.08); }
+  100% { transform: none; }
+}
+@keyframes mascot-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+
+/* Vault: sneaks in from the side and peeks */
+.mascot-vault { animation: mascot-sneak 800ms cubic-bezier(0.65, 0, 0.35, 1) both, mascot-peek 2.4s 800ms ease-in-out infinite; }
+@keyframes mascot-sneak {
+  0% { transform: translateX(120%) rotate(18deg); }
+  70% { transform: translateX(-8px) rotate(-6deg); }
+  100% { transform: none; }
+}
+@keyframes mascot-peek { 0%, 100% { rotate: 0deg; } 40% { rotate: -9deg; } 60% { rotate: -9deg; } }
+
+/* Tools: spins in, then a little shoulder flex */
+.mascot-tools { animation: mascot-spin 650ms cubic-bezier(0.34, 1.3, 0.64, 1) both, mascot-flex 1.6s 650ms ease-in-out infinite; }
+@keyframes mascot-spin {
+  from { transform: translateY(60%) rotateY(540deg) scale(0.5); }
+  to { transform: none; }
+}
+@keyframes mascot-flex { 0%, 100% { scale: 1; } 50% { scale: 1.05; } }
+
+/* Blog: slow thoughtful rise with a pencil-tap sway */
+.mascot-blog { animation: mascot-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both, mascot-think 2.8s 900ms ease-in-out infinite; }
+@keyframes mascot-think { 0%, 100% { rotate: 0deg; translate: 0 0; } 50% { rotate: 3deg; translate: 0 -4px; } }
+
+/* Arena: punches in with a jab shake */
+.mascot-arena { animation: mascot-rise 300ms ease-out both, mascot-jab 0.7s 300ms ease-in-out infinite; }
+@keyframes mascot-jab {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  15% { translate: -14px 0; rotate: -3deg; }
+  30% { translate: 6px 0; rotate: 2deg; }
+  45% { translate: 0 0; rotate: 0deg; }
+}
+
+/* Ranks: victory jumps */
+.mascot-ranks { animation: mascot-rise 400ms ease-out both, mascot-jump 0.9s 400ms cubic-bezier(0.33, 0, 0.67, 1) infinite; }
+@keyframes mascot-jump {
+  0%, 100% { translate: 0 0; scale: 1.08 0.92; }
+  15% { scale: 0.95 1.06; }
+  50% { translate: 0 -36px; scale: 1 1; }
+  85% { scale: 0.97 1.03; }
+}
+
+/* Feed: slides up and jitters like scrolling */
+.mascot-feed { animation: mascot-rise 500ms ease-out both, mascot-scroll 1.4s 500ms steps(1) infinite; }
+@keyframes mascot-scroll {
+  0% { translate: 0 0; }
+  20% { translate: 0 -3px; }
+  40% { translate: 0 0; }
+  60% { translate: 0 -3px; }
+  80% { translate: 0 0; rotate: 2deg; }
+}
+
+/* Account: zooms toward you */
+.mascot-point { animation: mascot-zoom 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both, mascot-nudge 1.2s 600ms ease-in-out infinite; }
+@keyframes mascot-zoom { from { transform: translateY(40%) scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes mascot-nudge { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
+
+/* External / other links: grooves side to side */
+.mascot-dance { animation: mascot-rise 400ms ease-out both, mascot-groove 0.8s 400ms ease-in-out infinite; }
+@keyframes mascot-groove {
+  0%, 100% { translate: 0 0; skew: 0deg; rotate: 0deg; }
+  25% { translate: -10px -6px; skew: -6deg; rotate: -4deg; }
+  75% { translate: 10px -6px; skew: 6deg; rotate: 4deg; }
+}
+
+/* Buttons: springy squash-and-stretch pop */
+.mascot-thumbs { animation: mascot-boing 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both, mascot-bob 1s 700ms ease-in-out infinite; }
+@keyframes mascot-boing {
+  0% { transform: translateY(100%) scale(1.3, 0.6); }
+  50% { transform: translateY(-14px) scale(0.85, 1.2); }
+  75% { transform: scale(1.08, 0.94); }
+  100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-pose,
+  .mascot-bubble {
+    animation: none !important;
+  }
+  .mascot-stage {
+    transition: opacity 200ms ease;
+  }
+  .mascot-stage[data-visible="false"] {
+    transform: none;
+  }
+}
+
+  @media (prefers-reduced-motion: reduce) {
+  .logo-3d {
+  animation: none;
+  }
+
+  .neon-shine {
+  animation: none;
+    filter: drop-shadow(0 0 12px oklch(0.62 0.21 300 / 0.7))
+      drop-shadow(0 0 32px oklch(0.7 0.18 330 / 0.5));
+  }
+}
+
+/* Unlock gate */
+.unlock-gate {
+  transition: opacity 1100ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.unlock-video {
+  transform: scale(1);
+  transition: transform 1100ms cubic-bezier(0.4, 0, 0.2, 1), filter 1100ms ease;
+}
+.unlock-content {
+  transition: opacity 500ms ease, transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.unlock-gate--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+.unlock-gate--leaving .unlock-video {
+  transform: scale(1.12);
+  filter: blur(6px);
+}
+.unlock-gate--leaving .unlock-content {
+  opacity: 0;
+  transform: translateY(-1.5rem);
+}
+.unlock-shimmer {
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--foreground) 45%, transparent) 0%,
+    var(--foreground) 50%,
+    color-mix(in oklch, var(--foreground) 45%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: unlock-shimmer 2.4s linear infinite;
+}
+@keyframes unlock-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unlock-shimmer { animation: none; color: var(--foreground); background: none; }
+  .unlock-gate--leaving .unlock-video { transform: none; filter: none; }
+  .unlock-gate--leaving .unlock-content { transform: none; }
+}
