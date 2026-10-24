@@ -1,7 +1,9 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { headers } from "next/headers"
 import { sql } from "@/lib/db"
+import { auth } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
 import { applyPaidSession } from "@/lib/apply-payment"
 import { getQueueStatus, type QueueStatus } from "@/lib/queue-settings"
@@ -46,6 +48,13 @@ function sanitizeSubmission(input: NewSubmissionInput): NewSubmissionInput {
   }
 
   return { trackId, url, title, submittedBy, source, audioPathname }
+}
+
+// Submitting doesn't require an account, but signed-in artists get their
+// songs linked so they show up on their Account page.
+async function getSessionUserId(): Promise<string | null> {
+  const session = await auth.api.getSession({ headers: await headers() }).catch(() => null)
+  return session?.user.id ?? null
 }
 
 const LINE_PRIORITY: Record<LineId, number> = { skipplus: 0, skip: 1, boost: 2, free: 3 }
@@ -113,9 +122,10 @@ export async function getPublicQueueStatus(): Promise<QueueStatus> {
 export async function createFreeSubmission(raw: NewSubmissionInput): Promise<void> {
   if (!(await getQueueStatus()).freeOpen) throw new Error("The Free line is closed")
   const input = sanitizeSubmission(raw)
+  const userId = await getSessionUserId()
   await sql`
-    INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname, entered_at)
-    VALUES (${input.trackId}, ${input.url}, ${input.title}, ${input.submittedBy}, ${input.source}, 'free', 'active', ${input.audioPathname ?? null}, now())
+    INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname, entered_at, user_id)
+    VALUES (${input.trackId}, ${input.url}, ${input.title}, ${input.submittedBy}, ${input.source}, 'free', 'active', ${input.audioPathname ?? null}, now(), ${userId})
     ON CONFLICT (track_id) DO NOTHING
   `
   revalidatePath("/queue")
@@ -131,10 +141,11 @@ export async function createPaidSubmission(
     throw new Error("Invalid paid line")
   }
   const input = sanitizeSubmission(raw)
+  const userId = await getSessionUserId()
 
   const inserted = (await sql`
-    INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname)
-    VALUES (${input.trackId}, ${input.url}, ${input.title}, ${input.submittedBy}, ${input.source}, ${line}, 'pending', ${input.audioPathname ?? null})
+    INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname, user_id)
+    VALUES (${input.trackId}, ${input.url}, ${input.title}, ${input.submittedBy}, ${input.source}, ${line}, 'pending', ${input.audioPathname ?? null}, ${userId})
     ON CONFLICT (track_id) DO NOTHING
     RETURNING track_id
   `) as { track_id: string }[]

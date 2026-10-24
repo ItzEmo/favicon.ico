@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import {
@@ -14,28 +15,22 @@ import {
 import { PageHeader } from "@/components/page-header"
 import { SignOutButton } from "@/components/sign-out-button"
 import { auth } from "@/lib/auth"
+import { getTotalSubmissions, getUserSubmissions, statusLabel } from "@/lib/account"
 
 export const metadata: Metadata = {
   title: "Account",
   description: "Your Emo's Radio artist profile, submissions, and settings.",
 }
 
-const STATS = [
-  { icon: UploadCloud, label: "Submissions", value: "14" },
-  { icon: Star, label: "Avg Score", value: "8.3" },
-  { icon: Trophy, label: "Season Rank", value: "#5" },
-]
-
-const SUBMISSIONS = [
-  { title: "Dial Tone Romance", status: "Reviewed", score: "8.3" },
-  { title: "Paper Hearts (Demo)", status: "In Queue", score: "—" },
-  { title: "Static Bloom", status: "Reviewed", score: "7.9" },
-]
-
 const SETTINGS = [
-  { icon: Bell, label: "Notifications", hint: "On air pings, replies" },
-  { icon: Shield, label: "Privacy", hint: "Profile visibility" },
-  { icon: Settings, label: "Preferences", hint: "Theme, audio defaults" },
+  { icon: Bell, label: "Notifications", hint: "On air pings, replies", href: "/feed" },
+  { icon: Shield, label: "Privacy", hint: "Profile visibility", href: "#top" },
+  {
+    icon: Settings,
+    label: "Preferences",
+    hint: "Profile picture, artist name, Instagram",
+    href: "/account/profile",
+  },
 ]
 
 function initialsOf(name: string) {
@@ -53,6 +48,16 @@ export default async function AccountPage() {
     month: "short",
     year: "numeric",
   })
+
+  const [totalSubmissions, submissions] = await Promise.all([
+    getTotalSubmissions(),
+    getUserSubmissions(user.id),
+  ])
+  const stats = [
+    { icon: UploadCloud, label: "Submissions", value: totalSubmissions.toLocaleString("en-US") },
+    { icon: Star, label: "Avg Score", value: "8.3" },
+    { icon: Trophy, label: "Season Rank", value: "#5" },
+  ]
 
   return (
     <>
@@ -91,7 +96,7 @@ export default async function AccountPage() {
         </div>
 
         <ul className="mt-6 grid grid-cols-3 gap-4">
-          {STATS.map((stat) => (
+          {stats.map((stat) => (
             <li
               key={stat.label}
               className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-card/50 px-3 py-5 text-center"
@@ -112,27 +117,52 @@ export default async function AccountPage() {
             <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-primary">
               Your Submissions
             </h3>
-            <ul className="flex flex-col gap-3">
-              {SUBMISSIONS.map((sub) => (
-                <li
-                  key={sub.title}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+            {submissions.length === 0 ? (
+              <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card/50 p-5">
+                <p className="text-sm text-muted-foreground">
+                  You haven&apos;t submitted any songs yet.
+                </p>
+                <Link
+                  href="/submit"
+                  className="text-sm font-bold uppercase tracking-wider text-primary hover:underline"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {sub.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{sub.status}</p>
-                  </div>
-                  <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-primary">
-                    {sub.score !== "—" ? (
-                      <Star className="size-3.5 fill-current" aria-hidden="true" />
-                    ) : null}
-                    {sub.score}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                  Submit a song
+                </Link>
+              </div>
+            ) : (
+              <ul className="flex max-h-96 flex-col gap-3 overflow-y-auto pr-1">
+                {submissions.map((sub) => (
+                  <li
+                    key={sub.trackId}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {sub.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {statusLabel(sub.status)} &middot;{" "}
+                        {new Date(sub.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-primary">
+                      {sub.avgScore != null ? (
+                        <>
+                          <Star className="size-3.5 fill-current" aria-hidden="true" />
+                          {sub.avgScore.toFixed(1)}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>
@@ -142,8 +172,8 @@ export default async function AccountPage() {
             <ul className="flex flex-col gap-3">
               {SETTINGS.map((s) => (
                 <li key={s.label}>
-                  <a
-                    href="#top"
+                  <Link
+                    href={s.href}
                     className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
                   >
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
@@ -157,7 +187,7 @@ export default async function AccountPage() {
                       className="size-4 text-muted-foreground transition-colors group-hover:text-primary"
                       aria-hidden="true"
                     />
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
