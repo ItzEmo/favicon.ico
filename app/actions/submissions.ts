@@ -133,14 +133,20 @@ export async function createFreeSubmission(raw: NewSubmissionInput): Promise<voi
 
 // Paid line (skip / skip+): store the track as pending, then open Checkout.
 // The track only becomes visible in the queue after payment is confirmed.
+// A Skip+ purchase may include one optional bonus track, which joins the
+// Skip+ line right behind the first track when payment is confirmed.
 export async function createPaidSubmission(
   raw: NewSubmissionInput,
   line: LineId,
+  rawBonus?: NewSubmissionInput | null,
 ): Promise<CheckoutResult> {
   if (!isLineId(line) || line === "free") {
     throw new Error("Invalid paid line")
   }
+  if (rawBonus && line !== "skipplus") throw new Error("Only Skip+ includes a second song")
   const input = sanitizeSubmission(raw)
+  const bonus = rawBonus ? sanitizeSubmission(rawBonus) : null
+  if (bonus && bonus.trackId === input.trackId) throw new Error("Invalid second song")
   const userId = await getSessionUserId()
 
   const inserted = (await sql`
@@ -151,12 +157,27 @@ export async function createPaidSubmission(
   `) as { track_id: string }[]
   if (inserted.length === 0) throw new Error("This submission already exists")
 
+  if (bonus) {
+    const bonusInserted = (await sql`
+      INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname, user_id)
+      VALUES (${bonus.trackId}, ${bonus.url}, ${bonus.title}, ${bonus.submittedBy}, ${bonus.source}, ${line}, 'pending', ${bonus.audioPathname ?? null}, ${userId})
+      ON CONFLICT (track_id) DO NOTHING
+      RETURNING track_id
+    `) as { track_id: string }[]
+    if (bonusInserted.length === 0) throw new Error("This submission already exists")
+  }
+
+  const label = bonus
+    ? `"${input.title}" + "${bonus.title}" by ${input.submittedBy}`
+    : `"${input.title}" by ${input.submittedBy}`
+
   return createCheckout({
     catalogKey: catalogKeyForLine(line),
-    description: `${LINES[line].shortName} line — "${input.title}" by ${input.submittedBy}`,
+    description: `${LINES[line].shortName} line — ${label}`,
     trackId: input.trackId,
     metadata: {
       trackId: input.trackId,
+      ...(bonus ? { bonusTrackId: bonus.trackId } : {}),
       action: "submit",
       line,
       title: input.title.slice(0, 200),
