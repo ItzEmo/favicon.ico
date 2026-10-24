@@ -12,6 +12,20 @@ const FADE_MS = 1100
 
 type Phase = 'locked' | 'unlocking' | 'gone'
 
+// Seeded so server and client render identical drops (no hydration mismatch).
+function seeded(seed: number) {
+  const x = Math.sin(seed * 9301 + 49297) * 233280
+  return x - Math.floor(x)
+}
+
+const RAIN_DROPS = Array.from({ length: 70 }, (_, i) => ({
+  left: Math.round(seeded(i + 1) * 1000) / 10,
+  length: 40 + Math.round(seeded(i + 101) * 50),
+  opacity: Math.round((0.15 + seeded(i + 201) * 0.3) * 100) / 100,
+  duration: Math.round((0.55 + seeded(i + 301) * 0.5) * 100) / 100,
+  delay: Math.round(seeded(i + 401) * 200) / 100,
+}))
+
 export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
   const [phase, setPhase] = useState<Phase>('locked')
   const [progress, setProgress] = useState(0)
@@ -101,16 +115,31 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
         unlocking && 'unlock-gate--leaving',
       )}
     >
-      <video
+      <img
         className="unlock-video absolute inset-0 h-full w-full object-cover"
-        src="/unlock/background.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
+        src="/images/unlock-rain-bg.webp"
+        alt=""
+        width={1920}
+        height={1081}
+        fetchPriority="high"
+        decoding="async"
         aria-hidden="true"
       />
+      <div aria-hidden="true" className="unlock-rain absolute inset-0">
+        {RAIN_DROPS.map((drop, i) => (
+          <span
+            key={i}
+            className="unlock-rain__drop"
+            style={{
+              left: `${drop.left}%`,
+              height: `${drop.length}px`,
+              opacity: drop.opacity,
+              animationDuration: `${drop.duration}s`,
+              animationDelay: `-${drop.delay}s`,
+            }}
+          />
+        ))}
+      </div>
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/10 to-background/85"
