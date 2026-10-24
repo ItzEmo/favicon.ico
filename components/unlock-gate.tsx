@@ -85,7 +85,15 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
     else setProgress(0)
   }
 
-  const swipeRef = useRef<{ id: number; x: number; y: number; active: boolean } | null>(null)
+  const swipeRef = useRef<{
+    id: number
+    x: number
+    y: number
+    active: boolean
+    lastX: number
+    lastT: number
+    velocity: number
+  } | null>(null)
   const swipeProgressRef = useRef(0)
 
   const onGatePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -94,7 +102,15 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
     const target = e.target as HTMLElement
     // Leave links, buttons, embeds, the slider and the drag-to-rotate character alone.
     if (target.closest('a, button, iframe, input, textarea, canvas, [role="slider"], [role="tab"]')) return
-    swipeRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, active: false }
+    swipeRef.current = {
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      active: false,
+      lastX: e.clientX,
+      lastT: e.timeStamp,
+      velocity: 0,
+    }
   }
 
   const onGatePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -102,18 +118,25 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
     if (!swipe || swipe.id !== e.pointerId || phase !== 'locked') return
     const dx = e.clientX - swipe.x
     const dy = e.clientY - swipe.y
+    const dt = e.timeStamp - swipe.lastT
+    if (dt > 0) {
+      swipe.velocity = swipe.velocity * 0.6 + ((e.clientX - swipe.lastX) / dt) * 0.4
+      swipe.lastX = e.clientX
+      swipe.lastT = e.timeStamp
+    }
     if (!swipe.active) {
-      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+      // Vertical drags scroll the page, leftward drags are ignored: only a swipe right unlocks.
+      if ((Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) || dx < -12) {
         swipeRef.current = null
         return
       }
-      if (Math.abs(dx) < 12) return
+      if (dx < 12) return
       swipe.active = true
       e.currentTarget.setPointerCapture(e.pointerId)
       setDragging(true)
     }
     const distance = Math.min(320, window.innerWidth * 0.45)
-    const next = Math.min(1, Math.max(0, Math.abs(dx) / distance))
+    const next = Math.min(1, Math.max(0, dx / distance))
     swipeProgressRef.current = next
     setProgress(next)
   }
@@ -124,7 +147,8 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
     swipeRef.current = null
     if (!swipe.active) return
     setDragging(false)
-    if (swipeProgressRef.current >= UNLOCK_THRESHOLD) unlock()
+    const flicked = e.type === 'pointerup' && swipe.velocity > 0.5 && e.clientX - swipe.x > 50
+    if (swipeProgressRef.current >= UNLOCK_THRESHOLD || flicked) unlock()
     else setProgress(0)
     swipeProgressRef.current = 0
   }
@@ -263,7 +287,7 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
             </div>
           </div>
           <p className="text-xs uppercase tracking-[0.25em] text-foreground/60">
-            Swipe anywhere to enter the site
+            Swipe right anywhere to enter
           </p>
           </div>
         </div>
