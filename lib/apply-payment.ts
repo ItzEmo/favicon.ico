@@ -58,6 +58,27 @@ export async function applyPaidSession(session: Stripe.Checkout.Session): Promis
       WHERE track_id = ${trackId} AND status = 'pending' AND line = ${line}
         AND EXISTS (SELECT 1 FROM claim)
     `
+
+    // Skip+ bonus song: queued right behind the first track. The claim above
+    // already recorded this session, so key idempotency on the first track
+    // having just gone live with this payment.
+    const bonusTrackId = metadata.bonusTrackId
+    if (line === "skipplus" && bonusTrackId && bonusTrackId !== trackId) {
+      await sql`
+        UPDATE submissions
+        SET status = 'active',
+            paid_at = now(),
+            entered_at = now() + interval '1 millisecond',
+            boost_cents = 0,
+            boosted = FALSE,
+            boosted_at = NULL
+        WHERE track_id = ${bonusTrackId} AND status = 'pending' AND line = 'skipplus'
+          AND EXISTS (
+            SELECT 1 FROM processed_payments
+            WHERE session_id = ${session.id} AND track_id = ${trackId}
+          )
+      `
+    }
     return true
   }
 

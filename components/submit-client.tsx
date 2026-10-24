@@ -40,15 +40,64 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
   const closedLines = LINE_ORDER.filter((id) => !isLineOpen(status, id))
   const firstOpenLine = LINE_ORDER.find((id) => isLineOpen(status, id)) ?? "free"
   const allClosed = closedLines.length === LINE_ORDER.length
-  const [submitted, setSubmitted] = useState<{ track: Track; line: LineId } | null>(null)
+  const [submitted, setSubmitted] = useState<{ track: Track; line: LineId; bonus?: Track | null } | null>(null)
   const [method, setMethod] = useState<"link" | "file">("link")
   const [line, setLine] = useState<LineId>(status.freeOpen ? "free" : firstOpenLine)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [checkout, setCheckout] = useState<CheckoutSession | null>(null)
   const [pendingTrack, setPendingTrack] = useState<Track | null>(null)
+  const [firstTrack, setFirstTrack] = useState<Track | null>(null)
+  const [bonusTrack, setBonusTrack] = useState<Track | null>(null)
+
+  function toInput(track: Track) {
+    return {
+      trackId: track.id,
+      url: track.url,
+      title: track.title,
+      submittedBy: track.submittedBy,
+      source: track.source,
+      audioPathname: track.audioPathname ?? null,
+    }
+  }
+
+  function handleLineChange(next: LineId) {
+    setLine(next)
+    setFirstTrack(null)
+    setError(null)
+  }
+
+  async function startSkipPlusCheckout(track: Track, bonus: Track | null) {
+    setError(null)
+    setPending(true)
+    try {
+      const { clientSecret, sessionId, publishableKey } = await createPaidSubmission(
+        toInput(track),
+        "skipplus",
+        bonus ? toInput(bonus) : null,
+      )
+      setPendingTrack(track)
+      setBonusTrack(bonus)
+      setCheckout({
+        clientSecret,
+        sessionId,
+        publishableKey,
+        title: `${LINES.skipplus.name} — ${formatPrice(LINES.skipplus.priceInCents)}`,
+      })
+    } catch (err) {
+      console.log("[v0] submission error:", (err as Error).message)
+      setError("Something went wrong starting your submission. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
 
   async function handleTrackReady(track: Track) {
+    if (line === "skipplus") {
+      setError(null)
+      setFirstTrack(track)
+      return
+    }
     setError(null)
     setPending(true)
     try {
@@ -93,15 +142,19 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
   function handlePaymentSuccess() {
     setCheckout(null)
     if (pendingTrack) {
-      setSubmitted({ track: pendingTrack, line })
+      setSubmitted({ track: pendingTrack, line, bonus: bonusTrack })
       setPendingTrack(null)
+      setBonusTrack(null)
+      setFirstTrack(null)
     }
   }
 
   const paidLabel =
     line === "free"
       ? "Submit To Free Line"
-      : `Pay ${formatPrice(LINES[line].priceInCents)} — ${LINES[line].shortName} Line`
+      : line === "skipplus"
+        ? "Next — Optional Second Song"
+        : `Pay ${formatPrice(LINES[line].priceInCents)} — ${LINES[line].shortName} Line`
 
   return (
     <>
@@ -124,8 +177,16 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
                 {submitted.line === "free" ? "You're In The Queue" : "Payment Confirmed"}
               </h2>
               <p className="max-w-sm text-sm text-muted-foreground text-pretty">
-                <span className="font-semibold text-foreground">{submitted.track.title}</span>{" "}
-                was added to the{" "}
+                <span className="font-semibold text-foreground">{submitted.track.title}</span>
+                {submitted.bonus ? (
+                  <>
+                    {" "}and{" "}
+                    <span className="font-semibold text-foreground">{submitted.bonus.title}</span>{" "}
+                    were added to the{" "}
+                  </>
+                ) : (
+                  " was added to the "
+                )}
                 <span className="font-semibold text-primary">
                   {LINES[submitted.line].shortName} line
                 </span>
@@ -161,9 +222,110 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
                 Submissions are paused right now. Check back when the next session opens.
               </p>
             </div>
+          ) : firstTrack ? (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Skip+ Bonus — Step 2 of 2
+                </span>
+                <h2 className="text-xl font-extrabold uppercase tracking-tight text-foreground text-balance">
+                  Add A Second Song?
+                </h2>
+                <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
+                  Skip+ includes an optional second track. It plays in the Skip+ line right after{" "}
+                  <span className="font-semibold text-foreground">{firstTrack.title}</span>. No extra charge.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/60 p-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <CheckCircle2 className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{firstTrack.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">Song 1 · {firstTrack.submittedBy}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFirstTrack(null)}
+                  disabled={pending}
+                  className="shrink-0 text-xs font-bold uppercase tracking-wider text-primary hover:underline disabled:opacity-50"
+                >
+                  Change
+                </button>
+              </div>
+
+              <div
+                role="tablist"
+                aria-label="Second song submission method"
+                className="grid grid-cols-2 gap-1 rounded-full border border-border bg-background/60 p-1"
+              >
+                {(
+                  [
+                    { key: "link", label: "Paste a Link", icon: Link2 },
+                    { key: "file", label: "Upload a File", icon: FileAudio },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={method === tab.key}
+                    onClick={() => setMethod(tab.key)}
+                    className={cn(
+                      "flex items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors",
+                      method === tab.key
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <tab.icon className="size-4" aria-hidden="true" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {method === "link" ? (
+                <SubmitForm
+                  key={`bonus-link-${firstTrack.id}`}
+                  onSubmit={(bonus) => startSkipPlusCheckout(firstTrack, bonus)}
+                  submitLabel={`Pay ${formatPrice(LINES.skipplus.priceInCents)} — Both Songs`}
+                  pending={pending}
+                />
+              ) : (
+                <FileUploadForm
+                  key={`bonus-file-${firstTrack.id}`}
+                  onSubmit={(bonus) => startSkipPlusCheckout(firstTrack, bonus)}
+                  submitLabel={`Pay ${formatPrice(LINES.skipplus.priceInCents)} — Both Songs`}
+                  pending={pending}
+                />
+              )}
+
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">or</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={pending}
+                onClick={() => startSkipPlusCheckout(firstTrack, null)}
+                className="rounded-full text-xs font-bold uppercase tracking-wider"
+              >
+                Continue With One Song
+              </Button>
+
+              {error ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
+              ) : null}
+            </div>
           ) : (
             <div className="flex flex-col gap-6">
-              <LineSelector value={line} onChange={setLine} closedLines={closedLines} />
+              <LineSelector value={line} onChange={handleLineChange} closedLines={closedLines} />
 
               <div className="h-px w-full bg-border" />
 
