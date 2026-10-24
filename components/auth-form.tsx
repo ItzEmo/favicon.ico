@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useRef, useState, type FormEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -17,10 +17,12 @@ export function AuthForm({
   mode,
   googleEnabled,
   initialError = null,
+  autoStartGoogle = false,
 }: {
   mode: Mode
   googleEnabled: boolean
   initialError?: string | null
+  autoStartGoogle?: boolean
 }) {
   const router = useRouter()
   const [name, setName] = useState("")
@@ -54,6 +56,13 @@ export function AuthForm({
 
   async function handleGoogle() {
     setError(null)
+    // Google refuses to render inside iframes (like the v0 preview), and
+    // third-party cookies there break the OAuth state check. Run the flow
+    // top-level in a new tab instead.
+    if (window.self !== window.top) {
+      window.open(`${window.location.origin}/sign-in?start=google`, "_blank", "noopener")
+      return
+    }
     setPending("google")
     const { error } = await authClient.signIn.social({
       provider: "google",
@@ -67,6 +76,15 @@ export function AuthForm({
       setPending(null)
     }
   }
+
+  const autoStarted = useRef(false)
+  useEffect(() => {
+    if (!autoStartGoogle || !googleEnabled || autoStarted.current) return
+    if (window.self !== window.top) return
+    autoStarted.current = true
+    void handleGoogle()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStartGoogle, googleEnabled])
 
   return (
     <div className="rounded-3xl border border-border bg-card/80 p-6 shadow-2xl shadow-primary/10 sm:p-8">
