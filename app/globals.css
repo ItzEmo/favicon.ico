@@ -426,26 +426,12 @@
   from { background-position: 100% 0; }
   to { background-position: -100% 0; }
 }
-/* Clear-glass bubble lettering: near-transparent body, bright rim, specular sheen */
-.glass-title {
-  font-family: var(--font-bubble), var(--font-sans);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: transparent;
-  background-image:
-    radial-gradient(120% 60% at 30% 12%, color-mix(in oklch, var(--foreground) 70%, transparent) 0%, transparent 42%),
-    linear-gradient(170deg,
-      color-mix(in oklch, var(--foreground) 22%, transparent) 0%,
-      color-mix(in oklch, var(--foreground) 6%, transparent) 40%,
-      color-mix(in oklch, var(--foreground) 4%, transparent) 70%,
-      color-mix(in oklch, var(--foreground) 30%, transparent) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-stroke: 1.5px color-mix(in oklch, var(--foreground) 85%, transparent);
+/* Glass logo: transparent body lets the background show through; shadow keeps rims readable */
+.glass-logo {
+  opacity: 0.92;
   filter:
-    drop-shadow(0 0 1px color-mix(in oklch, var(--foreground) 70%, transparent))
-    drop-shadow(0 0 14px color-mix(in oklch, var(--foreground) 18%, transparent))
-    drop-shadow(0 10px 24px color-mix(in oklch, var(--background) 80%, transparent));
+    drop-shadow(0 0 10px color-mix(in oklch, var(--foreground) 14%, transparent))
+    drop-shadow(0 8px 20px color-mix(in oklch, var(--background) 85%, transparent));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -119,10 +119,17 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
       <div className="unlock-content relative h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-8 px-5 pt-14 pb-10 sm:pt-20">
           <header className="flex flex-col items-center gap-3 text-center">
-            <h1 className="glass-title flex flex-col items-center text-7xl leading-[0.8] sm:text-8xl">
-              <span>Emo&apos;s</span>
-              <span>Radio</span>
-            </h1>
+  <h1 className="w-full max-w-sm">
+  <img
+  src="/images/emos-radio-logo.webp"
+  alt="Emo's Radio"
+  width={1117}
+  height={702}
+  fetchPriority="high"
+  className="glass-logo h-auto w-full select-none"
+  draggable={false}
+  />
+  </h1>
             <p className="max-w-xs text-sm leading-relaxed text-foreground/85 text-pretty [text-shadow:0_1px_8px_var(--background)]">
               Live music reviews. Submit your track, battle in the Arena, get heard.
             </p>
