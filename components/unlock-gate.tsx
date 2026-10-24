@@ -197,7 +197,7 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
       <div className="unlock-content relative h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-8 px-5 pt-14 pb-10 sm:pt-20">
           <header className="flex flex-col items-center gap-3 text-center">
-  <h1 className="w-full max-w-sm">
+  <h1 className="logo-shine relative w-full max-w-sm">
   <img
   src="/images/emos-radio-logo.webp"
   alt="Emo's Radio"
