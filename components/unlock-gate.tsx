@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronsRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UnlockMusic, hasArtistMusic } from '@/components/unlock-music'
-import type { ArtistLinks } from '@/lib/artist-links-types'
+import { BrandIcon, SOCIAL_LABELS } from '@/components/brand-icon'
+import { SOCIAL_LINK_KINDS, type ArtistLinks } from '@/lib/artist-links-types'
 
 const UNLOCK_THRESHOLD = 0.85
 const FADE_MS = 1100
@@ -88,6 +89,7 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
   if (phase === 'gone') return null
 
   const unlocking = phase === 'unlocking'
+  const socials = SOCIAL_LINK_KINDS.flatMap((kind) => (links[kind] ? [{ kind, url: links[kind] as string }] : []))
 
   return (
     <div
@@ -114,10 +116,42 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
         className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/10 to-background/85"
       />
 
-      <div className="unlock-content relative flex h-full flex-col items-center justify-end px-6 pb-14 sm:pb-20">
-        <h1 className="sr-only">Emo&apos;s Radio</h1>
-        <div className="flex w-full max-w-sm flex-col items-center gap-4">
+      <div className="unlock-content relative h-full overflow-y-auto overscroll-contain">
+        <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-8 px-5 pt-14 pb-10 sm:pt-20">
+          <header className="flex flex-col items-center gap-3 text-center">
+            <img
+              src="/apple-icon.png"
+              alt=""
+              width={96}
+              height={96}
+              className="size-24 rounded-full border-2 border-primary/70 object-cover shadow-[0_0_32px_var(--primary)]"
+            />
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground text-balance">Emo&apos;s Radio</h1>
+            <p className="max-w-xs text-sm leading-relaxed text-foreground/85 text-pretty [text-shadow:0_1px_8px_var(--background)]">
+              Live music reviews. Submit your track, battle in the Arena, get heard.
+            </p>
+          </header>
+
+          {socials.length > 0 && (
+            <nav aria-label="Emo on social media" className="flex w-full flex-col gap-3">
+              {socials.map(({ kind, url }) => (
+                <a
+                  key={kind}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative flex h-14 w-full items-center justify-center rounded-full border border-foreground/20 bg-background/55 px-14 text-sm font-bold text-foreground backdrop-blur-md outline-none transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-primary hover:bg-background/75 focus-visible:ring-2 focus-visible:ring-foreground"
+                >
+                  <BrandIcon kind={kind} className="absolute left-5" />
+                  {SOCIAL_LABELS[kind]}
+                </a>
+              ))}
+            </nav>
+          )}
+
           {hasArtistMusic(links) && <UnlockMusic links={links} />}
+
+          <div className="mt-auto flex w-full flex-col items-center gap-4 pt-4">
           <div
             ref={trackRef}
             className="relative h-16 w-full rounded-full border border-foreground/20 bg-background/40 p-1 backdrop-blur-md"
@@ -161,8 +195,9 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
             </div>
           </div>
           <p className="text-xs uppercase tracking-[0.25em] text-foreground/60">
-            Live music reviews
+            Slide to enter the site
           </p>
+          </div>
         </div>
       </div>
     </div>

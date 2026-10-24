@@ -1,8 +1,24 @@
-export type ArtistLinkKind = "spotify" | "apple_music" | "all_music"
+export type SocialLinkKind = "instagram" | "youtube" | "tiktok"
+
+export type ArtistLinkKind = "spotify" | "apple_music" | "all_music" | SocialLinkKind
 
 export type ArtistLinks = Partial<Record<ArtistLinkKind, string>>
 
-export const ARTIST_LINK_KINDS: ArtistLinkKind[] = ["spotify", "apple_music", "all_music"]
+export type ArtistLinkSettings = { links: ArtistLinks; hidden: ArtistLinkKind[] }
+
+export const SOCIAL_LINK_KINDS: SocialLinkKind[] = ["instagram", "youtube", "tiktok"]
+
+export const ARTIST_LINK_KINDS: ArtistLinkKind[] = ["spotify", "apple_music", "all_music", ...SOCIAL_LINK_KINDS]
+
+const SOCIAL_HOSTS: Record<SocialLinkKind, { hosts: string[]; label: string }> = {
+  instagram: { hosts: ["instagram.com"], label: "an instagram.com" },
+  youtube: { hosts: ["youtube.com", "youtu.be"], label: "a youtube.com" },
+  tiktok: { hosts: ["tiktok.com"], label: "a tiktok.com" },
+}
+
+function matchesHost(hostname: string, hosts: string[]) {
+  return hosts.some((h) => hostname === h || hostname.endsWith(`.${h}`))
+}
 
 export type Embed = { src: string; height: number }
 
@@ -50,5 +66,12 @@ export function validateArtistLink(kind: ArtistLinkKind, raw: string): { url: st
       ? { url: value }
       : { error: "Use a music.apple.com link to an artist, album, song or playlist." }
   }
-  return parseHttps(value) ? { url: value } : { error: "Use a full https:// link." }
+  const url = parseHttps(value)
+  if (kind === "instagram" || kind === "youtube" || kind === "tiktok") {
+    const rule = SOCIAL_HOSTS[kind]
+    return url && matchesHost(url.hostname, rule.hosts)
+      ? { url: value }
+      : { error: `Use ${rule.label} link to your profile.` }
+  }
+  return url ? { url: value } : { error: "Use a full https:// link." }
 }

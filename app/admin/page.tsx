@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones } from "lucide-react"
 import { DjPlayer } from "@/components/dj-player"
 import { AdminQueueHistory } from "@/components/admin-queue-history"
-import { getArtistLinks } from "@/lib/artist-links"
+import { getArtistLinkSettings } from "@/lib/artist-links"
 import { AdminMusicLinks } from "@/components/admin-music-links"
 import { isAdmin } from "@/lib/admin-auth"
 import { getBattles, getPosts } from "@/lib/content"
@@ -50,7 +50,7 @@ export default async function AdminPage() {
     getBattles(),
     getPosts(),
     getVaultEntries(),
-    getArtistLinks(),
+    getArtistLinkSettings(),
     getQueueStatus(),
   ])
   const archivedTrackIds = vaultEntries.flatMap((e) => (e.trackId ? [e.trackId] : []))
@@ -136,9 +136,9 @@ export default async function AdminPage() {
           <SectionHeading
             icon={Disc3}
             title="My Music"
-            note="Your Spotify and Apple Music links. Their players show on the unlock screen."
+            note="Your music players and social links on the unlock screen. Switch a social off to hide it."
           />
-          <AdminMusicLinks links={musicLinks} />
+          <AdminMusicLinks links={musicLinks.links} hidden={musicLinks.hidden} />
         </section>
       </div>
     </>
