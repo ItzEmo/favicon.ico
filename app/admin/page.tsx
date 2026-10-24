@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3 } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History } from "lucide-react"
+import { AdminQueueHistory } from "@/components/admin-queue-history"
 import { getArtistLinks } from "@/lib/artist-links"
 import { AdminMusicLinks } from "@/components/admin-music-links"
 import { isAdmin } from "@/lib/admin-auth"
@@ -22,6 +23,7 @@ export const metadata = {
 
 const SECTIONS = [
   { id: "queue", label: "Queue", icon: ListMusic },
+  { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
   { id: "arena", label: "Arena", icon: Swords },
   { id: "blog", label: "Blog", icon: Newspaper },
@@ -85,6 +87,15 @@ export default async function AdminPage() {
           <SectionHeading icon={ListMusic} title="Queue" note="Reorder tracks, remove anything, and run the session." />
           <AdminQueueSwitches status={queueStatus} />
           <AdminQueue archivedTrackIds={archivedTrackIds} />
+        </section>
+
+        <section id="history" className="scroll-mt-36">
+          <SectionHeading
+            icon={History}
+            title="History"
+            note="Every song played from the queue. Add them to the Vault after the live, re-listen, or send them back to the queue."
+          />
+          <AdminQueueHistory archivedTrackIds={archivedTrackIds} />
         </section>
 
         <section id="vault" className="scroll-mt-36">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import useSWR from "swr"
+import useSWR, { mutate as globalMutate } from "swr"
 import {
   ChevronUp,
   ChevronDown,
@@ -35,7 +35,7 @@ import {
   finishAndPlayNext,
 } from "@/app/actions/admin"
 
-const LINE_BADGE: Record<LineId, { label: string; className: string; icon: typeof Zap | null }> = {
+export const LINE_BADGE: Record<LineId, { label: string; className: string; icon: typeof Zap | null }> = {
   skipplus: { label: "Skip+", className: "bg-primary text-primary-foreground", icon: Rocket },
   skip: { label: "Skip", className: "bg-primary/20 text-primary", icon: Zap },
   boost: { label: "Boost", className: "bg-accent/20 text-accent-foreground", icon: ChevronsUp },
@@ -44,7 +44,7 @@ const LINE_BADGE: Record<LineId, { label: string; className: string; icon: typeo
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-function VaultButton({
+export function VaultButton({
   archived,
   title,
   onClick,
@@ -107,7 +107,7 @@ export function AdminQueue({ archivedTrackIds = [] }: { archivedTrackIds?: strin
     setBusyId("__next__")
     try {
       await finishAndPlayNext()
-      await mutate()
+      await Promise.all([mutate(), globalMutate("/api/admin/history")])
     } catch (err) {
       console.log("[v0] next error:", (err as Error).message)
     } finally {
