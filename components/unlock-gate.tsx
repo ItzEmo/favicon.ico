@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronsRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UnlockMusic, hasArtistMusic } from '@/components/unlock-music'
-import { BrandIcon, SOCIAL_LABELS } from '@/components/brand-icon'
+import { UnlockSocials } from '@/components/unlock-socials'
+import { WelcomeStage } from '@/components/welcome-stage'
 import { SOCIAL_LINK_KINDS, type ArtistLinks } from '@/lib/artist-links-types'
 
 const UNLOCK_THRESHOLD = 0.85
@@ -164,22 +165,9 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
             </p>
           </header>
 
-          {socials.length > 0 && (
-            <nav aria-label="Emo on social media" className="flex w-full flex-col gap-3">
-              {socials.map(({ kind, url }) => (
-                <a
-                  key={kind}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative flex h-14 w-full items-center justify-center rounded-full border border-foreground/20 bg-background/55 px-14 text-sm font-bold text-foreground backdrop-blur-md outline-none transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-primary hover:bg-background/75 focus-visible:ring-2 focus-visible:ring-foreground"
-                >
-                  <BrandIcon kind={kind} className="absolute left-5" />
-                  {SOCIAL_LABELS[kind]}
-                </a>
-              ))}
-            </nav>
-          )}
+          <WelcomeStage className="h-72 w-full xl:absolute xl:right-[3vw] xl:bottom-0 xl:h-[86vh] xl:w-[30vw] xl:max-w-[560px]" />
+
+          {socials.length > 0 && <UnlockSocials socials={socials} />}
 
           {hasArtistMusic(links) && <UnlockMusic links={links} />}
 
