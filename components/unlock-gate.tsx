@@ -119,13 +119,22 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
       <div className="unlock-content relative h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-8 px-5 pt-14 pb-10 sm:pt-20">
           <header className="flex flex-col items-center gap-3 text-center">
-            <img
-              src="/apple-icon.png"
-              alt=""
-              width={96}
-              height={96}
-              className="size-24 rounded-full border-2 border-primary/70 object-cover shadow-[0_0_32px_var(--primary)]"
-            />
+            <div aria-hidden="true" className="pendant-sway relative -mt-6 aspect-[560/531] w-52 sm:w-60">
+              <img
+                src="/images/pendant-chain.webp"
+                alt=""
+                width={560}
+                height={531}
+                className="absolute inset-0 size-full"
+              />
+              <img
+                src="/images/pendant-charm.webp"
+                alt=""
+                width={560}
+                height={531}
+                className="pendant-swing absolute inset-0 size-full"
+              />
+            </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground text-balance">Emo&apos;s Radio</h1>
             <p className="max-w-xs text-sm leading-relaxed text-foreground/85 text-pretty [text-shadow:0_1px_8px_var(--background)]">
               Live music reviews. Submit your track, battle in the Arena, get heard.
