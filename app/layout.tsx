@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Modak } from 'next/font/google'
 import { SiteNav } from '@/components/site-nav'
 import { SiteFooter } from '@/components/site-footer'
 import { HoverMascot } from '@/components/hover-mascot'
@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 })
+const modak = Modak({ variable: '--font-bubble', weight: '400', subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
@@ -59,7 +60,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} bg-background`}
+      className={`dark ${geistSans.variable} ${geistMono.variable} ${modak.variable} bg-background`}
     >
       <body className="font-sans antialiased">
         {admin ? (

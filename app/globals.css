@@ -426,31 +426,29 @@
   from { background-position: 100% 0; }
   to { background-position: -100% 0; }
 }
-/* Iced pendant: chain sways from the neck, charm swings from its bail a beat later */
-.pendant-sway {
-  transform-origin: 50% -40%;
-  animation: pendant-sway 4.2s ease-in-out infinite;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
-  filter: drop-shadow(0 0 18px color-mix(in oklch, var(--primary) 45%, transparent));
-}
-.pendant-swing {
-  transform-origin: 50% 45%;
-  animation: pendant-swing 4.2s ease-in-out infinite;
-  animation-delay: -0.35s;
-}
-@keyframes pendant-sway {
-  0%, 100% { transform: rotate(-2.2deg); }
-  50% { transform: rotate(2.2deg); }
-}
-@keyframes pendant-swing {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
+/* Clear-glass bubble lettering: near-transparent body, bright rim, specular sheen */
+.glass-title {
+  font-family: var(--font-bubble), var(--font-sans);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: transparent;
+  background-image:
+    radial-gradient(120% 60% at 30% 12%, color-mix(in oklch, var(--foreground) 70%, transparent) 0%, transparent 42%),
+    linear-gradient(170deg,
+      color-mix(in oklch, var(--foreground) 22%, transparent) 0%,
+      color-mix(in oklch, var(--foreground) 6%, transparent) 40%,
+      color-mix(in oklch, var(--foreground) 4%, transparent) 70%,
+      color-mix(in oklch, var(--foreground) 30%, transparent) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-stroke: 1.5px color-mix(in oklch, var(--foreground) 85%, transparent);
+  filter:
+    drop-shadow(0 0 1px color-mix(in oklch, var(--foreground) 70%, transparent))
+    drop-shadow(0 0 14px color-mix(in oklch, var(--foreground) 18%, transparent))
+    drop-shadow(0 10px 24px color-mix(in oklch, var(--background) 80%, transparent));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pendant-sway,
-  .pendant-swing { animation: none; }
   .unlock-shimmer { animation: none; color: var(--foreground); background: none; }
   .unlock-gate--leaving .unlock-video { transform: none; filter: none; }
   .unlock-gate--leaving .unlock-content { transform: none; }
