@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones } from "lucide-react"
+import { DjPlayer } from "@/components/dj-player"
 import { AdminQueueHistory } from "@/components/admin-queue-history"
 import { getArtistLinks } from "@/lib/artist-links"
 import { AdminMusicLinks } from "@/components/admin-music-links"
@@ -22,6 +23,7 @@ export const metadata = {
 }
 
 const SECTIONS = [
+  { id: "player", label: "Player", icon: Headphones },
   { id: "queue", label: "Queue", icon: ListMusic },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
@@ -83,6 +85,15 @@ export default async function AdminPage() {
       </nav>
 
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-14 px-4 py-10 sm:px-6">
+        <section id="player" className="scroll-mt-36">
+          <SectionHeading
+            icon={Headphones}
+            title="DJ Player"
+            note="Keeps playing while you move around the site. Use the knob to set your volume."
+          />
+          <DjPlayer showUpNext={false} />
+        </section>
+
         <section id="queue" className="scroll-mt-36">
           <SectionHeading icon={ListMusic} title="Queue" note="Reorder tracks, remove anything, and run the session." />
           <AdminQueueSwitches status={queueStatus} />

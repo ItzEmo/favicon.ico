@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import useSWR from "swr"
 import {
   Play,
   Pause,
@@ -21,11 +19,8 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { sourceLabels, type QueueItem, type Source } from "@/components/track-types"
 import { type LineId } from "@/lib/lines"
-import { finishAndPlayNext, playTrack } from "@/app/actions/admin"
-
-const FREE_PREVIEW_SECONDS = 90 // 1:30 free-line cutoff
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+import { useDjAudio } from "@/components/dj-audio-provider"
+import { VolumeKnob } from "@/components/volume-knob"
 
 const LINE_LABEL: Record<LineId, { label: string; className: string; icon: typeof Zap | null }> = {
   skipplus: { label: "Skip+", className: "bg-primary text-primary-foreground", icon: Rocket },
@@ -65,91 +60,28 @@ function embedUrl(source: Source, url: string): string | null {
   }
 }
 
-export function DjPlayer() {
-  const { data, isLoading, mutate } = useSWR<{ nowPlaying: QueueItem | null; tracks: QueueItem[] }>(
-    "/api/queue",
-    fetcher,
-    { refreshInterval: 8000 },
-  )
-  const tracks = useMemo(() => data?.tracks ?? [], [data])
-  const track = data?.nowPlaying ?? null
-
-  const [playing, setPlaying] = useState(false)
-  const [current, setCurrent] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [previewEnded, setPreviewEnded] = useState(false)
-  const [overridePreview, setOverridePreview] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
-
-  // Reset transport state when the on-air track changes.
-  useEffect(() => {
-    setPlaying(false)
-    setCurrent(0)
-    setDuration(0)
-    setPreviewEnded(false)
-    setOverridePreview(false)
-  }, [track?.trackId])
+export function DjPlayer({ showUpNext = true }: { showUpNext?: boolean }) {
+  const {
+    track,
+    tracks,
+    isLoading,
+    hasAudio,
+    playing,
+    current,
+    limit,
+    previewEnded,
+    volume,
+    busy,
+    togglePlay,
+    seek,
+    playFullAnyway,
+    setVolume,
+    putOnAir,
+    markPlayed,
+  } = useDjAudio()
 
   const isFree = track?.line === "free"
-  const hasAudio = Boolean(track?.audioPathname)
   const embed = track && !hasAudio ? embedUrl(track.source, track.url) : null
-
-  function togglePlay() {
-    const el = audioRef.current
-    if (!el) return
-    if (el.paused) {
-      void el.play()
-      setPlaying(true)
-    } else {
-      el.pause()
-      setPlaying(false)
-    }
-  }
-
-  async function putOnAir(trackId: string) {
-    setBusy(true)
-    try {
-      await playTrack(trackId)
-      await mutate()
-    } catch (err) {
-      console.log("[v0] playTrack error:", (err as Error).message)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function markPlayed() {
-    setBusy(true)
-    try {
-      await finishAndPlayNext()
-      await mutate()
-    } catch (err) {
-      console.log("[v0] markPlayed error:", (err as Error).message)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  function onTimeUpdate() {
-    const el = audioRef.current
-    if (!el) return
-    setCurrent(el.currentTime)
-    if (isFree && !overridePreview && el.currentTime >= FREE_PREVIEW_SECONDS) {
-      el.pause()
-      setPlaying(false)
-      setPreviewEnded(true)
-    }
-  }
-
-  function onSeek(e: React.ChangeEvent<HTMLInputElement>) {
-    const el = audioRef.current
-    if (!el) return
-    const t = Number(e.target.value)
-    el.currentTime = t
-    setCurrent(t)
-    if (t < FREE_PREVIEW_SECONDS) setPreviewEnded(false)
-  }
 
   if (isLoading) {
     return (
@@ -201,7 +133,6 @@ export function DjPlayer() {
 
   const badge = LINE_LABEL[track.line]
   const BadgeIcon = badge.icon
-  const limit = isFree && !overridePreview ? FREE_PREVIEW_SECONDS : duration
 
   return (
     <div className="flex flex-col gap-6">
@@ -240,14 +171,6 @@ export function DjPlayer() {
         <div className="mt-5">
           {hasAudio ? (
             <>
-              <audio
-                ref={audioRef}
-                src={`/api/host/audio?pathname=${encodeURIComponent(track.audioPathname as string)}`}
-                onTimeUpdate={onTimeUpdate}
-                onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                onEnded={() => setPlaying(false)}
-                preload="metadata"
-              />
               <div className="flex items-center gap-3">
                 <span className="w-10 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                   {fmt(current)}
@@ -258,7 +181,7 @@ export function DjPlayer() {
                   max={limit || 0}
                   step={0.1}
                   value={Math.min(current, limit || 0)}
-                  onChange={onSeek}
+                  onChange={(e) => seek(Number(e.target.value))}
                   aria-label="Seek"
                   className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
                 />
@@ -274,12 +197,7 @@ export function DjPlayer() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      setOverridePreview(true)
-                      setPreviewEnded(false)
-                      void audioRef.current?.play()
-                      setPlaying(true)
-                    }}
+                    onClick={playFullAnyway}
                     className="text-xs font-bold uppercase tracking-wider text-primary hover:underline"
                   >
                     Play full anyway
@@ -287,7 +205,8 @@ export function DjPlayer() {
                 </div>
               ) : null}
 
-              <div className="mt-5 flex items-center justify-center gap-3">
+              <div className="mt-5 flex items-center justify-center gap-6">
+                <span aria-hidden="true" className="size-16" />
                 <Button
                   size="icon"
                   onClick={togglePlay}
@@ -306,6 +225,7 @@ export function DjPlayer() {
                 >
                   <SkipForward className="size-4" aria-hidden="true" />
                 </Button>
+                <VolumeKnob value={volume} onChange={setVolume} />
               </div>
             </>
           ) : embed ? (
@@ -366,7 +286,7 @@ export function DjPlayer() {
         </div>
       </div>
 
-      {/* Up next list */}
+      {showUpNext ? (
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Up next</h3>
@@ -412,6 +332,7 @@ export function DjPlayer() {
           })}
         </ol>
       </div>
+      ) : null}
     </div>
   )
 }

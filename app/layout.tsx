@@ -6,6 +6,8 @@ import { SiteFooter } from '@/components/site-footer'
 import { HoverMascot } from '@/components/hover-mascot'
 import { isAdmin } from '@/lib/admin-auth'
 import { UnlockGate } from '@/components/unlock-gate'
+import { DjAudioProvider } from '@/components/dj-audio-provider'
+import { DjMiniPlayer } from '@/components/dj-mini-player'
 import { getArtistLinks } from '@/lib/artist-links'
 import './globals.css'
 
@@ -60,11 +62,22 @@ export default async function RootLayout({
       className={`dark ${geistSans.variable} ${geistMono.variable} bg-background`}
     >
       <body className="font-sans antialiased">
-        <div id="top" className="flex min-h-screen flex-col bg-background">
-          <SiteNav isAdmin={admin} />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </div>
+        {admin ? (
+          <DjAudioProvider>
+            <div id="top" className="flex min-h-screen flex-col bg-background">
+              <SiteNav isAdmin={admin} />
+              <main className="flex-1">{children}</main>
+              <SiteFooter />
+            </div>
+            <DjMiniPlayer />
+          </DjAudioProvider>
+        ) : (
+          <div id="top" className="flex min-h-screen flex-col bg-background">
+            <SiteNav isAdmin={admin} />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+          </div>
+        )}
         <HoverMascot />
         <UnlockGate links={musicLinks} />
         {process.env.NODE_ENV === 'production' && <Analytics />}
