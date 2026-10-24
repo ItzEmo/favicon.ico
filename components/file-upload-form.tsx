@@ -1,14 +1,26 @@
 "use client"
 
 import { useRef, useState, type DragEvent, type FormEvent } from "react"
+import { upload } from "@vercel/blob/client"
 import { UploadCloud, FileAudio, X, Plus, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Track } from "@/components/track-types"
 
-const ACCEPTED_EXTS = [".wav", ".mp3", ".m4a"] as const
-const ACCEPT_ATTR = "audio/wav,audio/x-wav,audio/mpeg,audio/mp4,audio/x-m4a,.wav,.mp3,.m4a"
-const MAX_MB = 50
+const CONTENT_TYPE_BY_EXT = {
+  ".wav": "audio/wav",
+  ".mp3": "audio/mpeg",
+  ".mp4": "video/mp4",
+  ".m4a": "audio/mp4",
+} as const
+type AcceptedExt = keyof typeof CONTENT_TYPE_BY_EXT
+const ACCEPT_ATTR = "audio/*,video/mp4,.wav,.mp3,.mp4,.m4a"
+const MAX_MB = 200
+const MULTIPART_THRESHOLD = 10 * 1024 * 1024
+
+function isAcceptedExt(ext: string): ext is AcceptedExt {
+  return ext in CONTENT_TYPE_BY_EXT
+}
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -44,8 +56,8 @@ export function FileUploadForm({
     setError(null)
     if (!next) return
     const ext = extensionOf(next.name)
-    if (!ACCEPTED_EXTS.includes(ext as (typeof ACCEPTED_EXTS)[number])) {
-      setError("Unsupported format. Upload a .wav, .mp3, or .m4a file.")
+    if (!isAcceptedExt(ext)) {
+      setError("Unsupported format. Upload a .wav, .mp3, .mp4, or .m4a file.")
       return
     }
     if (next.size > MAX_MB * 1024 * 1024) {
@@ -79,15 +91,14 @@ export function FileUploadForm({
     setError(null)
     setUploading(true)
     try {
-      // Upload the actual audio to private Blob storage first.
-      const body = new FormData()
-      body.append("file", file)
-      const res = await fetch("/api/upload", { method: "POST", body })
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string }
-        throw new Error(data.error || "Upload failed")
-      }
-      const { pathname } = (await res.json()) as { pathname: string }
+      const ext = extensionOf(file.name)
+      const safeName = file.name.replace(/[^\w.\- ]+/g, "_")
+      const { pathname } = await upload(`submissions/${safeName}`, file, {
+        access: "private",
+        handleUploadUrl: "/api/upload",
+        contentType: isAcceptedExt(ext) ? CONTENT_TYPE_BY_EXT[ext] : undefined,
+        multipart: file.size > MULTIPART_THRESHOLD,
+      })
 
       onSubmit({
         id: crypto.randomUUID(),
@@ -168,7 +179,7 @@ export function FileUploadForm({
                 Drag &amp; drop your track here
               </p>
               <p className="text-xs text-muted-foreground">
-                WAV, MP3, or M4A {"\u00b7"} up to {MAX_MB} MB
+                WAV, MP3, MP4, or M4A {"\u00b7"} up to {MAX_MB} MB
               </p>
             </div>
             <Button
