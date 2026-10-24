@@ -27,11 +27,18 @@ export function UnlockMusic({ links }: { links: ArtistLinks }) {
 
   return (
     <section
-      aria-label="Music by Emo"
-      className="flex w-full max-w-sm flex-col gap-3 rounded-2xl border border-foreground/15 bg-background/45 p-3 backdrop-blur-md"
+      aria-label="Music by ItzEmo"
+      className={cn('music-card flex w-full max-w-sm flex-col gap-3 rounded-2xl p-3', current && `music-card--${current.id}`)}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">Music by Emo</p>
+        <p className="music-card__title text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
+          <span className="music-card__eq" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          Music by ItzEmo
+        </p>
         {players.length > 1 && (
           <div role="tablist" aria-label="Choose a service" className="flex rounded-full bg-foreground/10 p-0.5">
             {players.map((p) => (
@@ -78,7 +85,7 @@ export function UnlockMusic({ links }: { links: ArtistLinks }) {
             href={p.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-full border border-foreground/20 px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none transition-colors hover:border-primary hover:text-foreground focus-visible:ring-2 focus-visible:ring-foreground"
+            className={`music-chip music-chip--${p.id} flex items-center gap-1.5 rounded-full border border-foreground/20 px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus-visible:ring-2 focus-visible:ring-foreground`}
           >
             {p.label}
             <ExternalLink className="size-3" aria-hidden="true" />
@@ -89,7 +96,7 @@ export function UnlockMusic({ links }: { links: ArtistLinks }) {
             href={links.all_music}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+            className="music-chip music-chip--all flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-foreground"
           >
             All my music
             <ExternalLink className="size-3" aria-hidden="true" />
