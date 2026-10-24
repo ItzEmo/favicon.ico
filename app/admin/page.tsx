@@ -8,6 +8,8 @@ import { getVaultEntries } from "@/lib/vault"
 import { AdminVault } from "@/components/admin-vault"
 import { PageHeader } from "@/components/page-header"
 import { AdminQueue } from "@/components/admin-queue"
+import { AdminQueueSwitches } from "@/components/admin-queue-switches"
+import { getQueueStatus } from "@/lib/queue-settings"
 import { AdminArena } from "@/components/admin-arena"
 import { AdminBlog } from "@/components/admin-blog"
 
@@ -40,11 +42,12 @@ function SectionHeading({ icon: Icon, title, note }: { icon: typeof Swords; titl
 
 export default async function AdminPage() {
   if (!(await isAdmin())) notFound()
-  const [battles, posts, vaultEntries, musicLinks] = await Promise.all([
+  const [battles, posts, vaultEntries, musicLinks, queueStatus] = await Promise.all([
     getBattles(),
     getPosts(),
     getVaultEntries(),
     getArtistLinks(),
+    getQueueStatus(),
   ])
   const archivedTrackIds = vaultEntries.flatMap((e) => (e.trackId ? [e.trackId] : []))
 
@@ -80,6 +83,7 @@ export default async function AdminPage() {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-14 px-4 py-10 sm:px-6">
         <section id="queue" className="scroll-mt-36">
           <SectionHeading icon={ListMusic} title="Queue" note="Reorder tracks, remove anything, and run the session." />
+          <AdminQueueSwitches status={queueStatus} />
           <AdminQueue archivedTrackIds={archivedTrackIds} />
         </section>
 

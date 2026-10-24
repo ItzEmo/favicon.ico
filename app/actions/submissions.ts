@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { sql } from "@/lib/db"
 import { stripe } from "@/lib/stripe"
 import { applyPaidSession } from "@/lib/apply-payment"
+import { getQueueStatus, type QueueStatus } from "@/lib/queue-settings"
 import { LINES, type LineId, isLineId } from "@/lib/lines"
 import { type CatalogKey, catalogKeyForLine, getCatalogPriceId } from "@/lib/stripe-catalog"
 import type { QueueItem, Source } from "@/components/track-types"
@@ -103,8 +104,13 @@ function toQueueItem(r: Record<string, unknown>): QueueItem {
   }
 }
 
+export async function getPublicQueueStatus(): Promise<QueueStatus> {
+  return getQueueStatus()
+}
+
 // Free line: no payment, goes live immediately.
 export async function createFreeSubmission(raw: NewSubmissionInput): Promise<void> {
+  if (!(await getQueueStatus()).freeOpen) throw new Error("The Free line is closed")
   const input = sanitizeSubmission(raw)
   await sql`
     INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname, entered_at)
@@ -197,6 +203,7 @@ async function createCheckout(opts: {
   trackId: string
   metadata: Record<string, string>
 }): Promise<CheckoutResult> {
+  if (!(await getQueueStatus()).skipsOpen) throw new Error("Skips are closed")
   const price = await getCatalogPriceId(opts.catalogKey)
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded_page",

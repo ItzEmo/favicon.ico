@@ -14,9 +14,10 @@ const LINE_ICONS: Record<LineId, typeof Radio> = {
 interface LineSelectorProps {
   value: LineId
   onChange: (line: LineId) => void
+  closedLines?: LineId[]
 }
 
-export function LineSelector({ value, onChange }: LineSelectorProps) {
+export function LineSelector({ value, onChange, closedLines = [] }: LineSelectorProps) {
   return (
     <fieldset className="flex flex-col gap-3">
       <legend className="mb-1 text-sm font-medium text-foreground">
@@ -26,19 +27,23 @@ export function LineSelector({ value, onChange }: LineSelectorProps) {
         {LINE_ORDER.map((id) => {
           const line = LINES[id]
           const Icon = LINE_ICONS[id]
-          const selected = value === id
+          const closed = closedLines.includes(id)
+          const selected = value === id && !closed
           return (
             <button
               key={id}
               type="button"
               role="radio"
               aria-checked={selected}
+              disabled={closed}
               onClick={() => onChange(id)}
               className={cn(
                 "flex items-start gap-4 rounded-2xl border p-4 text-left transition-colors",
-                selected
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-background/60 hover:border-primary/50",
+                closed
+                  ? "cursor-not-allowed border-border bg-background/40 opacity-50"
+                  : selected
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-background/60 hover:border-primary/50",
               )}
             >
               <span
@@ -65,6 +70,11 @@ export function LineSelector({ value, onChange }: LineSelectorProps) {
                   >
                     {id === "free" ? "Free" : formatPrice(line.priceInCents)}
                   </span>
+                  {closed ? (
+                    <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-bold uppercase text-destructive">
+                      Closed
+                    </span>
+                  ) : null}
                 </span>
                 <span className="mt-1 block text-sm text-muted-foreground text-pretty">
                   {line.blurb}
