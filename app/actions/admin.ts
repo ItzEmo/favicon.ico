@@ -42,6 +42,17 @@ export async function removeTrack(trackId: string): Promise<void> {
   revalidatePath("/queue")
 }
 
+// Send a previously played track back into the queue, at the end of its line.
+export async function requeueTrack(trackId: string): Promise<void> {
+  await requireAdmin()
+  await sql`
+    UPDATE submissions SET status = 'active', entered_at = now()
+    WHERE track_id = ${trackId} AND status = 'played'
+  `
+  revalidatePath("/admin")
+  revalidatePath("/queue")
+}
+
 // Put a queued track on air. Whatever was playing goes back into the queue
 // at its original position (its line/boost/entry keys are untouched).
 export async function playTrack(trackId: string): Promise<void> {
@@ -58,10 +69,8 @@ export async function playTrack(trackId: string): Promise<void> {
 // Finish the on-air track and put the top of the queue on air.
 export async function finishAndPlayNext(): Promise<void> {
   await requireAdmin()
-  const playing = (await sql`
-    SELECT track_id FROM submissions WHERE status = 'playing'
-  `) as { track_id: string }[]
-  for (const row of playing) await removeTrack(row.track_id)
+  // Finished tracks are kept as 'played' so they show in the admin History.
+  await sql`UPDATE submissions SET status = 'played' WHERE status = 'playing'`
 
   await sql`
     UPDATE submissions SET status = 'playing', played_at = now()
