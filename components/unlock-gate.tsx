@@ -12,6 +12,20 @@ const FADE_MS = 1100
 
 type Phase = 'locked' | 'unlocking' | 'gone'
 
+// Seeded so server and client render identical drops (no hydration mismatch).
+function seeded(seed: number) {
+  const x = Math.sin(seed * 9301 + 49297) * 233280
+  return x - Math.floor(x)
+}
+
+const RAIN_DROPS = Array.from({ length: 70 }, (_, i) => ({
+  left: Math.round(seeded(i + 1) * 1000) / 10,
+  length: 40 + Math.round(seeded(i + 101) * 50),
+  opacity: Math.round((0.15 + seeded(i + 201) * 0.3) * 100) / 100,
+  duration: Math.round((0.55 + seeded(i + 301) * 0.5) * 100) / 100,
+  delay: Math.round(seeded(i + 401) * 200) / 100,
+}))
+
 export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
   const [phase, setPhase] = useState<Phase>('locked')
   const [progress, setProgress] = useState(0)
@@ -101,16 +115,31 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
         unlocking && 'unlock-gate--leaving',
       )}
     >
-      <video
+      <img
         className="unlock-video absolute inset-0 h-full w-full object-cover"
-        src="/unlock/background.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
+        src="/images/unlock-rain-bg.webp"
+        alt=""
+        width={1920}
+        height={1081}
+        fetchPriority="high"
+        decoding="async"
         aria-hidden="true"
       />
+      <div aria-hidden="true" className="unlock-rain absolute inset-0">
+        {RAIN_DROPS.map((drop, i) => (
+          <span
+            key={i}
+            className="unlock-rain__drop"
+            style={{
+              left: `${drop.left}%`,
+              height: `${drop.length}px`,
+              opacity: drop.opacity,
+              animationDuration: `${drop.duration}s`,
+              animationDelay: `-${drop.delay}s`,
+            }}
+          />
+        ))}
+      </div>
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/10 to-background/85"
@@ -119,14 +148,17 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
       <div className="unlock-content relative h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-8 px-5 pt-14 pb-10 sm:pt-20">
           <header className="flex flex-col items-center gap-3 text-center">
-            <img
-              src="/apple-icon.png"
-              alt=""
-              width={96}
-              height={96}
-              className="size-24 rounded-full border-2 border-primary/70 object-cover shadow-[0_0_32px_var(--primary)]"
-            />
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground text-balance">Emo&apos;s Radio</h1>
+  <h1 className="w-full max-w-sm">
+  <img
+  src="/images/emos-radio-logo.webp"
+  alt="Emo's Radio"
+  width={1117}
+  height={702}
+  fetchPriority="high"
+  className="glass-logo h-auto w-full select-none"
+  draggable={false}
+  />
+  </h1>
             <p className="max-w-xs text-sm leading-relaxed text-foreground/85 text-pretty [text-shadow:0_1px_8px_var(--background)]">
               Live music reviews. Submit your track, battle in the Arena, get heard.
             </p>
