@@ -39,10 +39,11 @@ export default function QueuePage() {
   async function handleSkip(item: QueueItem, target: LineId) {
     setPendingId(item.trackId)
     try {
-      const { clientSecret, sessionId } = await createSkipCheckout(item.trackId, target)
+      const { clientSecret, sessionId, publishableKey } = await createSkipCheckout(item.trackId, target)
       setCheckout({
         clientSecret,
         sessionId,
+        publishableKey,
         title: `Skip to ${LINES[target].shortName} — ${formatPrice(LINES[target].priceInCents)}`,
       })
     } catch (err) {
@@ -55,10 +56,11 @@ export default function QueuePage() {
   async function handleBoost(item: QueueItem) {
     setPendingId(item.trackId)
     try {
-      const { clientSecret, sessionId } = await createBoostCheckout(item.trackId)
+      const { clientSecret, sessionId, publishableKey } = await createBoostCheckout(item.trackId)
       setCheckout({
         clientSecret,
         sessionId,
+        publishableKey,
         title: `Boost "${item.title}" — $5`,
       })
     } catch (err) {
