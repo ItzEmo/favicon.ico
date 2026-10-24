@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; start?: string }>
 }) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (session?.user) redirect("/account")
-  const { error } = await searchParams
+  const { error, start } = await searchParams
   const initialError = error ? "Google sign-in didn't go through. Try again or use your email and password." : null
 
   return (
@@ -31,7 +31,9 @@ export default async function SignInPage({
         description="Log in to track your submissions, follow the queue, and manage your paid skips."
       />
       <section className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12 sm:px-6">
-        <AuthForm mode="sign-in" googleEnabled={isGoogleEnabled} initialError={initialError} />
+        <AuthForm mode="sign-in" googleEnabled={isGoogleEnabled} initialError={initialError}
+          autoStartGoogle={start === "google" && !error}
+        />
       </section>
     </>
   )
