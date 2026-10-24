@@ -63,7 +63,7 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
         })
         setSubmitted({ track, line })
       } else {
-        const { clientSecret, sessionId } = await createPaidSubmission(
+        const { clientSecret, sessionId, publishableKey } = await createPaidSubmission(
           {
             trackId: track.id,
             url: track.url,
@@ -78,6 +78,7 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
         setCheckout({
           clientSecret,
           sessionId,
+          publishableKey,
           title: `${LINES[line].name} — ${formatPrice(LINES[line].priceInCents)}`,
         })
       }

@@ -21,6 +21,7 @@ interface NewSubmissionInput {
 interface CheckoutResult {
   clientSecret: string
   sessionId: string
+  publishableKey: string
 }
 
 const SOURCES: Source[] = ["spotify", "soundcloud", "youtube", "apple", "bandcamp", "link"]
@@ -222,7 +223,14 @@ async function createCheckout(opts: {
     throw new Error("Failed to create checkout session")
   }
 
-  return { clientSecret: session.client_secret, sessionId: session.id }
+  // Dynamic lookup so the bundler can't freeze a stale NEXT_PUBLIC_ value at build time.
+  const keyName = "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+  const publishableKey = process.env[keyName]
+  if (!publishableKey) {
+    throw new Error("Stripe publishable key is not configured")
+  }
+
+  return { clientSecret: session.client_secret, sessionId: session.id, publishableKey }
 }
 
 // Server-side confirmation. Called when embedded Checkout completes and also

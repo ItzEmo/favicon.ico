@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { loadStripe } from "@stripe/stripe-js"
+import { loadStripe, type Stripe } from "@stripe/stripe-js"
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
@@ -9,13 +9,23 @@ import {
 import { X, Loader2 } from "lucide-react"
 import { confirmPayment } from "@/app/actions/submissions"
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string,
-)
+// The key comes from the server at checkout time so a key change never
+// leaves the browser bundle with a stale or missing value.
+const stripePromises = new Map<string, Promise<Stripe | null>>()
+
+function getStripe(publishableKey: string) {
+  let promise = stripePromises.get(publishableKey)
+  if (!promise) {
+    promise = loadStripe(publishableKey)
+    stripePromises.set(publishableKey, promise)
+  }
+  return promise
+}
 
 export interface CheckoutSession {
   clientSecret: string
   sessionId: string
+  publishableKey: string
   title: string
 }
 
@@ -92,7 +102,7 @@ export function CheckoutDialog({ session, onClose, onSuccess }: CheckoutDialogPr
         ) : (
           <div className="overflow-hidden rounded-xl">
             <EmbeddedCheckoutProvider
-              stripe={stripePromise}
+              stripe={getStripe(session.publishableKey)}
               options={{
                 clientSecret: session.clientSecret,
                 onComplete: handleComplete,
