@@ -85,6 +85,50 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
     else setProgress(0)
   }
 
+  const swipeRef = useRef<{ id: number; x: number; y: number; active: boolean } | null>(null)
+  const swipeProgressRef = useRef(0)
+
+  const onGatePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (phase !== 'locked' || dragStartRef.current) return
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    const target = e.target as HTMLElement
+    // Leave links, buttons, embeds, the slider and the drag-to-rotate character alone.
+    if (target.closest('a, button, iframe, input, textarea, canvas, [role="slider"], [role="tab"]')) return
+    swipeRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, active: false }
+  }
+
+  const onGatePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const swipe = swipeRef.current
+    if (!swipe || swipe.id !== e.pointerId || phase !== 'locked') return
+    const dx = e.clientX - swipe.x
+    const dy = e.clientY - swipe.y
+    if (!swipe.active) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+        swipeRef.current = null
+        return
+      }
+      if (Math.abs(dx) < 12) return
+      swipe.active = true
+      e.currentTarget.setPointerCapture(e.pointerId)
+      setDragging(true)
+    }
+    const distance = Math.min(320, window.innerWidth * 0.45)
+    const next = Math.min(1, Math.max(0, Math.abs(dx) / distance))
+    swipeProgressRef.current = next
+    setProgress(next)
+  }
+
+  const endSwipe = (e: React.PointerEvent<HTMLDivElement>) => {
+    const swipe = swipeRef.current
+    if (!swipe || swipe.id !== e.pointerId) return
+    swipeRef.current = null
+    if (!swipe.active) return
+    setDragging(false)
+    if (swipeProgressRef.current >= UNLOCK_THRESHOLD) unlock()
+    else setProgress(0)
+    swipeProgressRef.current = 0
+  }
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (phase !== 'locked') return
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'End') {
@@ -111,8 +155,12 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
       role="dialog"
       aria-modal="true"
       aria-label="Unlock Emo's Radio"
+      onPointerDown={onGatePointerDown}
+      onPointerMove={onGatePointerMove}
+      onPointerUp={endSwipe}
+      onPointerCancel={endSwipe}
       className={cn(
-        'unlock-gate fixed inset-0 z-[100] overflow-hidden bg-background',
+        'unlock-gate fixed inset-0 z-[100] touch-pan-y overflow-hidden bg-background',
         unlocking && 'unlock-gate--leaving',
       )}
     >
@@ -215,7 +263,7 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
             </div>
           </div>
           <p className="text-xs uppercase tracking-[0.25em] text-foreground/60">
-            Slide to enter the site
+            Swipe anywhere to enter the site
           </p>
           </div>
         </div>
