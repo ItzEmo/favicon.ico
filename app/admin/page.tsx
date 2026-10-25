@@ -11,6 +11,7 @@ import { AdminVault } from "@/components/admin-vault"
 import { PageHeader } from "@/components/page-header"
 import { AdminQueue } from "@/components/admin-queue"
 import { AdminQueueSwitches } from "@/components/admin-queue-switches"
+import { AdminClearQueue } from "@/components/admin-clear-queue"
 import { getQueueStatus } from "@/lib/queue-settings"
 import { AdminArena } from "@/components/admin-arena"
 import { AdminBlog } from "@/components/admin-blog"
@@ -97,6 +98,7 @@ export default async function AdminPage() {
         <section id="queue" className="scroll-mt-36">
           <SectionHeading icon={ListMusic} title="Queue" note="Reorder tracks, remove anything, and run the session." />
           <AdminQueueSwitches status={queueStatus} />
+          <AdminClearQueue />
           <AdminQueue archivedTrackIds={archivedTrackIds} />
         </section>
 

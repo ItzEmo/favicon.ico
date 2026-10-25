@@ -1,6 +1,7 @@
 "use client"
 
 import { useOptimistic, useTransition } from "react"
+import { useSWRConfig } from "swr"
 import { cn } from "@/lib/utils"
 import { setQueueLineOpen } from "@/app/actions/queue-settings"
 import type { QueueStatus } from "@/lib/queue-status"
@@ -13,6 +14,7 @@ const ROWS = [
 export function AdminQueueSwitches({ status }: { status: QueueStatus }) {
   const [optimistic, setOptimistic] = useOptimistic(status)
   const [, startTransition] = useTransition()
+  const { mutate } = useSWRConfig()
 
   return (
     <div className="mb-4 grid gap-3 sm:grid-cols-2">
@@ -44,6 +46,7 @@ export function AdminQueueSwitches({ status }: { status: QueueStatus }) {
                 startTransition(async () => {
                   setOptimistic({ ...optimistic, [field]: !open })
                   await setQueueLineOpen(key, !open)
+                  await mutate("/api/queue/status")
                 })
               }
               className={cn(

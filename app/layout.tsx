@@ -9,6 +9,7 @@ import { UnlockGate } from '@/components/unlock-gate'
 import { DjAudioProvider } from '@/components/dj-audio-provider'
 import { DjMiniPlayer } from '@/components/dj-mini-player'
 import { QueueAlert } from '@/components/queue-alert'
+import { QueueOffBanner } from '@/components/queue-off-banner'
 import { getArtistLinks } from '@/lib/artist-links'
 import './globals.css'
 
@@ -67,6 +68,7 @@ export default async function RootLayout({
           <DjAudioProvider>
             <div id="top" className="flex min-h-screen flex-col bg-background">
               <SiteNav isAdmin={admin} />
+              <QueueOffBanner />
               <main className="flex-1">{children}</main>
               <SiteFooter />
             </div>
@@ -75,6 +77,7 @@ export default async function RootLayout({
         ) : (
           <div id="top" className="flex min-h-screen flex-col bg-background">
             <SiteNav isAdmin={admin} />
+            <QueueOffBanner />
             <main className="flex-1">{children}</main>
             <SiteFooter />
           </div>

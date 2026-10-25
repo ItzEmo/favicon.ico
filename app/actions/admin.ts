@@ -42,6 +42,27 @@ export async function removeTrack(trackId: string): Promise<void> {
   revalidatePath("/queue")
 }
 
+// Remove every waiting track (and its stored audio). The on-air track and
+// History are left alone.
+export async function clearQueue(): Promise<number> {
+  await requireAdmin()
+  const rows = (await sql`
+    DELETE FROM submissions WHERE status = 'active'
+    RETURNING audio_pathname
+  `) as { audio_pathname: string | null }[]
+  const pathnames = rows.flatMap((r) => (r.audio_pathname ? [r.audio_pathname] : []))
+  if (pathnames.length > 0) {
+    try {
+      await del(pathnames)
+    } catch (err) {
+      console.log("[v0] blob delete error:", (err as Error).message)
+    }
+  }
+  revalidatePath("/admin")
+  revalidatePath("/queue")
+  return rows.length
+}
+
 // Send a previously played track back into the queue, at the end of its line.
 export async function requeueTrack(trackId: string): Promise<void> {
   await requireAdmin()
