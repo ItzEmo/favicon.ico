@@ -35,7 +35,7 @@ export async function getSessionSubmissionCount(): Promise<number> {
     SELECT COUNT(*)::int AS count
     FROM submissions, queue_settings
     WHERE queue_settings.id = 1
-      AND submissions.created_at >= GREATEST(queue_settings.session_started_at, date_trunc('day', now()))
+      AND submissions.created_at >= queue_settings.session_started_at
   `) as { count: number }[]
   return row?.count ?? 0
 }

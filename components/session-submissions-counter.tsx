@@ -16,8 +16,8 @@ export function SessionSubmissionsCounter() {
     >
       <Flame className="size-3.5 text-fuchsia-400" aria-hidden="true" />
       {count === undefined
-        ? "Counting today's submissions…"
-        : `${count} ${count === 1 ? "song" : "songs"} sent in today`}
+        ? "Counting this queue's submissions…"
+        : `${count} ${count === 1 ? "song" : "songs"} sent in this queue`}
     </span>
   )
 }
