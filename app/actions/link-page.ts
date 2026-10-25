@@ -9,7 +9,7 @@ import {
   MAX_BIO_LENGTH,
   isLinkAccent,
   isLinkEffect,
-  isLinkHeaderStyle,
+  isAvailableHeaderStyle,
   isPresetBackground,
   linkPath,
   normalizeHandle,
@@ -56,7 +56,7 @@ export async function updateLinkPage(
   if (!isLinkEffect(effect)) return { ok: false, message: "Pick a background effect" }
   const hideStats = formData.get("hideStats") === "on"
   const headerStyle = String(formData.get("headerStyle") ?? "avatar")
-  if (!isLinkHeaderStyle(headerStyle)) return { ok: false, message: "Pick a header style" }
+  if (!isAvailableHeaderStyle(headerStyle)) return { ok: false, message: "Pick an available header style" }
 
   let customLinks: CustomLink[]
   try {

@@ -256,8 +256,8 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
             onChange={(e) => setHeaderStyle(e.target.value as LinkHeaderStyle)}
           >
             {Object.entries(LINK_HEADER_STYLES).map(([key, style]) => (
-              <option key={key} value={key}>
-                {style.label}
+              <option key={key} value={key} disabled={!style.licensed}>
+                {style.licensed ? style.label : `${style.label} (coming soon)`}
               </option>
             ))}
           </SelectField>

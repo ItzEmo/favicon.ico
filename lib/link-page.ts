@@ -112,17 +112,22 @@ export function isLinkAccent(value: string): value is LinkAccent {
 }
 
 export const LINK_HEADER_STYLES = {
-  avatar: { label: "Profile picture", description: "Your photo bubble with your name below." },
-  name: { label: "Artist name", description: "Just your name, in the Emo's Radio bubble font." },
-  glass: { label: "Glass name", description: "Just your name, in clear liquid-glass lettering." },
-  disco: { label: "70s Disco", description: "Just your name, in a retro disco script." },
-  travelers: { label: "Air Travelers", description: "Just your name, in a bold vintage script." },
+  avatar: { label: "Profile picture", description: "Your photo bubble with your name below.", licensed: true },
+  name: { label: "Artist name", description: "Just your name, in the Emo's Radio bubble font.", licensed: true },
+  glass: { label: "Glass name", description: "Just your name, in clear liquid-glass lettering.", licensed: true },
+  // Personal-use-only fonts: flip `licensed` to true once a commercial license is on file.
+  disco: { label: "70s Disco", description: "Just your name, in a retro disco script.", licensed: false },
+  travelers: { label: "Air Travelers", description: "Just your name, in a bold vintage script.", licensed: false },
 } as const
 
 export type LinkHeaderStyle = keyof typeof LINK_HEADER_STYLES
 
 export function isLinkHeaderStyle(value: string): value is LinkHeaderStyle {
   return value in LINK_HEADER_STYLES
+}
+
+export function isAvailableHeaderStyle(value: string): value is LinkHeaderStyle {
+  return isLinkHeaderStyle(value) && LINK_HEADER_STYLES[value].licensed
 }
 
 // 3-24 chars, lowercase letters, numbers and single dashes, no leading/trailing dash.
