@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header"
 import { QueueList } from "@/components/queue-list"
 import { CheckoutDialog, type CheckoutSession } from "@/components/checkout-dialog"
 import { TrackRating, type RatingsData } from "@/components/track-rating"
+import { ArtistName } from "@/components/artist-name"
 import { sourceLabels, type QueueItem } from "@/components/track-types"
 import { LINES, formatPrice, type LineId } from "@/lib/lines"
 import {
@@ -107,7 +108,7 @@ export default function QueuePage() {
                   {nowPlaying.title}
                 </p>
                 <p className="truncate text-sm text-muted-foreground">
-                  submitted by {nowPlaying.submittedBy} &middot; {sourceLabels[nowPlaying.source]}
+                  submitted by <ArtistName name={nowPlaying.submittedBy} userId={nowPlaying.userId} /> &middot; {sourceLabels[nowPlaying.source]}
                 </p>
               </>
             ) : (

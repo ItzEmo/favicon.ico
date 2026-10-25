@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Trophy, Crown, Star } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
+import { ArtistName } from "@/components/artist-name"
 import { getLeaderboard, POINTS_PER_SCORE } from "@/lib/ratings"
 
 export const metadata: Metadata = {
@@ -47,7 +48,11 @@ export default async function RanksPage() {
                 p ? (
                   <div key={p.artist} className="flex flex-col items-center gap-2">
                     {p.rank === 1 ? <Crown className="size-6 text-primary" aria-hidden="true" /> : null}
-                    <span className="text-center text-sm font-semibold text-foreground">{p.artist}</span>
+                    <ArtistName
+                      name={p.artist}
+                      userId={p.userId}
+                      className="text-center text-sm font-semibold text-foreground"
+                    />
                     <span className="text-xs text-muted-foreground">{p.avg.toFixed(1)} avg</span>
                     <div
                       className={`flex ${heights[i]} w-full items-start justify-center rounded-t-xl border border-border bg-card pt-2 text-lg font-extrabold ${
@@ -78,7 +83,9 @@ export default async function RanksPage() {
                   {leaderboard.map((row) => (
                     <tr key={row.artist} className="transition-colors hover:bg-secondary/30">
                       <td className="px-4 py-3 font-bold text-primary">{row.rank}</td>
-                      <td className="px-4 py-3 font-medium text-foreground">{row.artist}</td>
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        <ArtistName name={row.artist} userId={row.userId} />
+                      </td>
                       <td className="px-4 py-3 text-right font-semibold text-foreground">{row.avg.toFixed(1)}</td>
                       <td className="hidden px-4 py-3 text-right text-muted-foreground sm:table-cell">
                         {row.reviews}

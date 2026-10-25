@@ -23,6 +23,8 @@ export interface QueueItem {
   createdAt: string
   // Present when the submission was an uploaded audio file (host can play it directly).
   audioPathname?: string | null
+  // The account that submitted it, when signed in — links to their public profile.
+  userId?: string | null
 }
 
 export function detectSource(url: string): Source {
