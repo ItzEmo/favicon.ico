@@ -9,6 +9,7 @@ import { discoFont, glassFont, travelersFont } from "@/lib/glass-font"
 import { LINK_ACCENTS, LINK_BACKGROUNDS } from "@/lib/link-page"
 import { musicLinkLabel } from "@/lib/music-links"
 import { appleMusicEmbed, spotifyEmbed } from "@/lib/artist-links-types"
+import { GlassFilterDefs } from "@/components/glass-filter-defs"
 import { LinkEffectBackdrop } from "@/components/link-effect-backdrop"
 import { ShareLinkButton } from "@/components/share-link-button"
 
@@ -112,11 +113,14 @@ export default async function LinkPage({ params }: Props) {
                   {page.name}
                 </h1>
               ) : link.headerStyle === "glass" ? (
+                <>
+                <GlassFilterDefs />
                 <h1
                   className={`${glassFont.className} glass-text max-w-full text-balance break-words text-6xl leading-none font-normal uppercase sm:text-7xl`}
                 >
                   {page.name}
                 </h1>
+                </>
               ) : link.headerStyle === "disco" || link.headerStyle === "travelers" ? (
                 <h1
                   className={`${link.headerStyle === "disco" ? discoFont.className : travelersFont.className} max-w-full text-balance break-words text-6xl leading-tight font-normal text-foreground sm:text-7xl [text-shadow:0_0_18px_var(--primary),0_2px_16px_var(--background)]`}
