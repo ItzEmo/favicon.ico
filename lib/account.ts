@@ -2,6 +2,12 @@ import "server-only"
 
 import { sql } from "@/lib/db"
 import { coerceMusicLinks, type MusicLink } from "@/lib/music-links"
+import {
+  isLinkAccent,
+  isPresetBackground,
+  type LinkAccent,
+  type LinkBackground,
+} from "@/lib/link-page"
 
 export interface AccountSubmission {
   trackId: string
@@ -154,6 +160,70 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     joinedAt: new Date(row.created_at).toISOString(),
     stats: await getUserStats(row.id),
   }
+}
+
+export interface LinkSettings {
+  handle: string
+  bio: string
+  background: LinkBackground
+  accent: LinkAccent
+  rain: boolean
+  backgroundImage: string | null
+}
+
+interface LinkRow {
+  handle: string
+  link_bio: string | null
+  link_theme: string
+  link_accent: string
+  link_rain: boolean
+  link_bg_image: string | null
+}
+
+function toLinkSettings(row: LinkRow): LinkSettings {
+  const background: LinkBackground =
+    row.link_theme === "custom" && row.link_bg_image
+      ? "custom"
+      : isPresetBackground(row.link_theme)
+        ? row.link_theme
+        : "rain"
+  return {
+    handle: row.handle,
+    bio: row.link_bio ?? "",
+    background,
+    accent: isLinkAccent(row.link_accent) ? row.link_accent : "violet",
+    rain: row.link_rain,
+    backgroundImage: row.link_bg_image,
+  }
+}
+
+export async function getLinkSettings(userId: string): Promise<LinkSettings | null> {
+  const rows = (await sql`
+    SELECT handle, link_bio, link_theme, link_accent, link_rain, link_bg_image
+    FROM "user" WHERE id = ${userId} LIMIT 1
+  `) as LinkRow[]
+  return rows[0] ? toLinkSettings(rows[0]) : null
+}
+
+export async function getHandleForUser(userId: string): Promise<string | null> {
+  const rows = (await sql`
+    SELECT handle FROM "user" WHERE id = ${userId} AND banned IS NOT TRUE LIMIT 1
+  `) as { handle: string | null }[]
+  return rows[0]?.handle ?? null
+}
+
+export interface LinkPage extends PublicProfile {
+  link: LinkSettings
+}
+
+export async function getLinkPage(handle: string): Promise<LinkPage | null> {
+  const rows = (await sql`
+    SELECT id FROM "user" WHERE handle = ${handle.toLowerCase()} AND banned IS NOT TRUE LIMIT 1
+  `) as { id: string }[]
+  if (!rows[0]) return null
+  const [profile, link] = await Promise.all([getPublicProfile(rows[0].id), getLinkSettings(rows[0].id)])
+  if (!profile || !link) return null
+  return { ...profile, link }
 }
 
 // Accepts "@handle", "handle", or any instagram.com/handle URL.
