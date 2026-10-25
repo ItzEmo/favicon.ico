@@ -41,7 +41,7 @@ export async function banUser(userId: string, reason: string): Promise<void> {
     WHERE id = ${id}
   `
   await sql`DELETE FROM public.session WHERE "userId" = ${id}`
-  revalidatePath("/admin")
+  revalidatePath("/admin", "layout")
 }
 
 export async function unbanUser(userId: string): Promise<void> {
@@ -51,7 +51,7 @@ export async function unbanUser(userId: string): Promise<void> {
     SET banned = false, ban_reason = NULL, banned_at = NULL
     WHERE id = ${String(userId ?? "")}
   `
-  revalidatePath("/admin")
+  revalidatePath("/admin", "layout")
 }
 
 // Permanently remove a track from the queue (and delete its stored audio).

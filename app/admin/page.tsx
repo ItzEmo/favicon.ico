@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound } from "lucide-react"
 import { AdminUsers } from "@/components/admin-users"
-import { getAllUsers } from "@/lib/users"
+import { AdminGuests } from "@/components/admin-guests"
+import { getAllUsers, getGuestSubmitters } from "@/lib/users"
 import { DjPlayer } from "@/components/dj-player"
 import { AdminQueueHistory } from "@/components/admin-queue-history"
 import { getArtistLinkSettings } from "@/lib/artist-links"
@@ -29,6 +30,7 @@ const SECTIONS = [
   { id: "player", label: "Player", icon: Headphones },
   { id: "queue", label: "Queue", icon: ListMusic },
   { id: "accounts", label: "Accounts", icon: Users },
+  { id: "guests", label: "Guests", icon: UserRound },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
   { id: "arena", label: "Arena", icon: Swords },
@@ -50,13 +52,14 @@ function SectionHeading({ icon: Icon, title, note }: { icon: typeof Swords; titl
 
 export default async function AdminPage() {
   if (!(await isAdmin())) notFound()
-  const [battles, posts, vaultEntries, musicLinks, queueStatus, users] = await Promise.all([
+  const [battles, posts, vaultEntries, musicLinks, queueStatus, users, guests] = await Promise.all([
     getBattles(),
     getPosts(),
     getVaultEntries(),
     getArtistLinkSettings(),
     getQueueStatus(),
     getAllUsers(),
+    getGuestSubmitters(),
   ])
   const archivedTrackIds = vaultEntries.flatMap((e) => (e.trackId ? [e.trackId] : []))
 
@@ -113,6 +116,15 @@ export default async function AdminPage() {
             note="Everyone who has signed up. Banning signs them out right away and stops them from signing back in."
           />
           <AdminUsers users={users} />
+        </section>
+
+        <section id="guests" className="scroll-mt-36">
+          <SectionHeading
+            icon={UserRound}
+            title="Guests"
+            note="People who submitted without an account, grouped by the name they used. Tap one to see their songs."
+          />
+          <AdminGuests guests={guests} />
         </section>
 
         <section id="history" className="scroll-mt-36">
