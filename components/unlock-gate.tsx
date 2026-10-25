@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { UnlockMusic, hasArtistMusic } from '@/components/unlock-music'
 import { UnlockSocials } from '@/components/unlock-socials'
 import { WelcomeStage } from '@/components/welcome-stage'
+import { WelcomePopup } from '@/components/welcome-popup'
 import { SOCIAL_LINK_KINDS, type ArtistLinks } from '@/lib/artist-links-types'
 
 const UNLOCK_THRESHOLD = 0.85
@@ -30,12 +31,23 @@ const RAIN_DROPS = Array.from({ length: 70 }, (_, i) => ({
 
 export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
   const pathname = usePathname()
-  // Shared artist link pages are opened from other apps; don't gate them.
-  if (pathname?.startsWith('/u/')) return null
-  return <UnlockGateScreen links={links} />
+  const [initialPath] = useState(pathname)
+  const [showWelcome, setShowWelcome] = useState(false)
+  const closeWelcome = useCallback(() => setShowWelcome(false), [])
+  const handleUnlocked = useCallback(() => setShowWelcome(true), [])
+
+  // Only visitors who land on the home page see the gate; deep links go straight in.
+  const gated = initialPath === '/'
+
+  return (
+    <>
+      {gated && <UnlockGateScreen links={links} onUnlocked={handleUnlocked} />}
+      {showWelcome && <WelcomePopup onClose={closeWelcome} />}
+    </>
+  )
 }
 
-function UnlockGateScreen({ links }: { links: ArtistLinks }) {
+function UnlockGateScreen({ links, onUnlocked }: { links: ArtistLinks; onUnlocked: () => void }) {
   const [phase, setPhase] = useState<Phase>('locked')
   const [progress, setProgress] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -61,8 +73,11 @@ function UnlockGateScreen({ links }: { links: ArtistLinks }) {
     const site = document.getElementById('top')
     if (site) site.inert = false
     document.documentElement.style.overflow = ''
-    window.setTimeout(() => setPhase('gone'), FADE_MS)
-  }, [])
+    window.setTimeout(() => {
+      setPhase('gone')
+      onUnlocked()
+    }, FADE_MS)
+  }, [onUnlocked])
 
   const travel = () => {
     const track = trackRef.current
