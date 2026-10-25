@@ -69,6 +69,17 @@ export function isLinkAccent(value: string): value is LinkAccent {
   return value in LINK_ACCENTS
 }
 
+export const LINK_HEADER_STYLES = {
+  avatar: { label: "Profile picture", description: "Your photo bubble with your name below." },
+  name: { label: "Artist name", description: "Just your name, in the Emo's Radio bubble font." },
+} as const
+
+export type LinkHeaderStyle = keyof typeof LINK_HEADER_STYLES
+
+export function isLinkHeaderStyle(value: string): value is LinkHeaderStyle {
+  return value in LINK_HEADER_STYLES
+}
+
 // 3-24 chars, lowercase letters, numbers and single dashes, no leading/trailing dash.
 const HANDLE_PATTERN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){2,23}$/
 

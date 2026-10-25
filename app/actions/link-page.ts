@@ -8,6 +8,7 @@ import { getLinkSettings } from "@/lib/account"
 import {
   MAX_BIO_LENGTH,
   isLinkAccent,
+  isLinkHeaderStyle,
   isPresetBackground,
   linkPath,
   normalizeHandle,
@@ -54,6 +55,8 @@ export async function updateLinkPage(
   const hideSubmissions = formData.get("hideSubmissions") === "on"
   const hideAvg = formData.get("hideAvgScore") === "on"
   const hideRank = formData.get("hideRank") === "on"
+  const headerStyle = String(formData.get("headerStyle") ?? "avatar")
+  if (!isLinkHeaderStyle(headerStyle)) return { ok: false, message: "Pick a header style" }
 
   let customLinks: CustomLink[]
   try {
@@ -72,7 +75,7 @@ export async function updateLinkPage(
           link_accent = ${accent}, link_rain = ${rain},
           link_custom_links = ${JSON.stringify(customLinks)}::jsonb,
           link_hide_submissions = ${hideSubmissions}, link_hide_avg = ${hideAvg},
-          link_hide_rank = ${hideRank}, "updatedAt" = now()
+          link_hide_rank = ${hideRank}, link_header = ${headerStyle}, "updatedAt" = now()
       WHERE id = ${session.user.id}
     `
   } catch (error) {

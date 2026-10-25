@@ -5,6 +5,8 @@ import { coerceMusicLinks, type MusicLink } from "@/lib/music-links"
 import {
   coerceCustomLinks,
   isLinkAccent,
+  isLinkHeaderStyle,
+  type LinkHeaderStyle,
   type CustomLink,
   isPresetBackground,
   type LinkAccent,
@@ -175,9 +177,11 @@ export interface LinkSettings {
   hideSubmissions: boolean
   hideAvgScore: boolean
   hideRank: boolean
+  headerStyle: LinkHeaderStyle
 }
 
 interface LinkRow {
+  link_header: string
   handle: string
   link_bio: string | null
   link_theme: string
@@ -208,13 +212,14 @@ function toLinkSettings(row: LinkRow): LinkSettings {
     hideSubmissions: row.link_hide_submissions,
     hideAvgScore: row.link_hide_avg,
     hideRank: row.link_hide_rank,
+    headerStyle: isLinkHeaderStyle(row.link_header) ? row.link_header : "avatar",
   }
 }
 
 export async function getLinkSettings(userId: string): Promise<LinkSettings | null> {
   const rows = (await sql`
     SELECT handle, link_bio, link_theme, link_accent, link_rain, link_bg_image,
-           link_custom_links, link_hide_submissions, link_hide_avg, link_hide_rank
+           link_custom_links, link_hide_submissions, link_hide_avg, link_hide_rank, link_header
     FROM "user" WHERE id = ${userId} LIMIT 1
   `) as LinkRow[]
   return rows[0] ? toLinkSettings(rows[0]) : null
