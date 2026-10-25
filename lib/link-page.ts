@@ -114,7 +114,9 @@ export function isLinkAccent(value: string): value is LinkAccent {
 export const LINK_HEADER_STYLES = {
   avatar: { label: "Profile picture", description: "Your photo bubble with your name below." },
   name: { label: "Artist name", description: "Just your name, in the Emo's Radio bubble font." },
-  glass: { label: "Glass name", description: "Just your name, in a clear glass serif." },
+  glass: { label: "Glass name", description: "Just your name, in clear liquid-glass lettering." },
+  disco: { label: "70s Disco", description: "Just your name, in a retro disco script." },
+  travelers: { label: "Air Travelers", description: "Just your name, in a bold vintage script." },
 } as const
 
 export type LinkHeaderStyle = keyof typeof LINK_HEADER_STYLES

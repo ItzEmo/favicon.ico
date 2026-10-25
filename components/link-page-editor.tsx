@@ -19,7 +19,7 @@ import {
   type LinkHeaderStyle,
 } from "@/lib/link-page"
 import type { LinkSettings } from "@/lib/account"
-import { glassFont } from "@/lib/glass-font"
+import { discoFont, glassFont, travelersFont } from "@/lib/glass-font"
 import { cn } from "@/lib/utils"
 
 function SelectField({ id, children, ...props }: React.ComponentProps<"select">) {
@@ -266,7 +266,11 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
               className={
                 headerStyle === "glass"
                   ? `${glassFont.className} glass-text text-lg leading-tight font-normal uppercase`
-                  : "text-sm font-semibold text-foreground"
+                  : headerStyle === "disco"
+                    ? `${discoFont.className} text-xl leading-tight text-foreground`
+                    : headerStyle === "travelers"
+                      ? `${travelersFont.className} text-xl leading-tight text-foreground`
+                      : "text-sm font-semibold text-foreground"
               }
             >
               {LINK_HEADER_STYLES[headerStyle].label}
