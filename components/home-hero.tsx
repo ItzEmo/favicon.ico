@@ -1,7 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Zap, UserPlus, Flame, Users, BadgeCheck, Tv, ChevronDown } from "lucide-react"
+import { Zap, UserPlus, Users, BadgeCheck, Tv, ChevronDown } from "lucide-react"
 import { LiveNowBadge } from "@/components/live-now-badge"
+import { SessionSubmissionsCounter } from "@/components/session-submissions-counter"
 
 // "BUILT FOR THE COMMUNITY" rendered with alternating neon tones for a flickering-sign feel.
 const TITLE_WORDS: { text: string; tones: string[] }[] = [
@@ -65,10 +66,7 @@ export function HomeHero() {
         <LiveNowBadge />
 
         {/* Submissions counter */}
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-neutral-300">
-          <Flame className="size-3.5 text-fuchsia-400" aria-hidden="true" />
-          28 artists submitted in the last hour
-        </span>
+        <SessionSubmissionsCounter />
 
         {/* Tagline */}
         <div className="flex flex-col gap-1.5">

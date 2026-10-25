@@ -10,11 +10,11 @@ import { formatStat, getHomeStats } from "@/lib/stats"
 
 export default async function Page() {
   await connection()
-  const { tracksReviewed, arenaBattles } = await getHomeStats()
+  const { tracksReviewed, arenaBattles, activeAccounts } = await getHomeStats()
 
   const STATS = [
     { value: formatStat(tracksReviewed), label: "Tracks Reviewed" },
-    { value: "3.1K", label: "Active Artists" },
+    { value: formatStat(activeAccounts), label: "Active Artists" },
     { value: formatStat(arenaBattles), label: "Arena Battles" },
     { value: "96", label: "Realms Created" },
   ]

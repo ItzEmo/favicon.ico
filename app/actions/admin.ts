@@ -81,6 +81,7 @@ export async function clearQueue(): Promise<number> {
     DELETE FROM submissions WHERE status = 'active'
     RETURNING audio_pathname
   `) as { audio_pathname: string | null }[]
+  await sql`UPDATE queue_settings SET session_started_at = now() WHERE id = 1`
   const pathnames = rows.flatMap((r) => (r.audio_pathname ? [r.audio_pathname] : []))
   if (pathnames.length > 0) {
     try {
