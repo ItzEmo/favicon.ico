@@ -2,12 +2,14 @@
 
 import { useActionState, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Copy, ExternalLink, ImagePlus, Link2, Loader2 } from "lucide-react"
+import { Check, Copy, ExternalLink, ImagePlus, Link2, Loader2, Plus, Trash2 } from "lucide-react"
 import { updateLinkPage, type LinkPageState } from "@/app/actions/link-page"
 import {
   LINK_ACCENTS,
   LINK_BACKGROUNDS,
   MAX_BIO_LENGTH,
+  MAX_CUSTOM_LINKS,
+  MAX_LINK_TITLE_LENGTH,
   linkPath,
   type LinkAccent,
   type LinkBackground,
@@ -28,6 +30,8 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [links, setLinks] = useState(() => settings.customLinks.map((l, i) => ({ ...l, id: `link-${i}` })))
+  const nextLinkId = useRef(settings.customLinks.length)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const fullUrl = `${origin}${linkPath(settings.handle)}`
@@ -141,6 +145,84 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
             className="resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
+
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 flex w-full items-baseline justify-between text-sm font-semibold text-foreground">
+            <span>Links</span>
+            <span className="text-xs font-normal text-muted-foreground">
+              {links.length}/{MAX_CUSTOM_LINKS}
+            </span>
+          </legend>
+          <p className="-mt-2 text-xs text-muted-foreground">
+            Any site you want: merch, YouTube, TikTok, tickets, your website.
+          </p>
+          {links.map((link, index) => (
+            <div key={link.id} className="flex flex-col gap-2 rounded-xl border border-border bg-background/60 p-3 sm:flex-row">
+              <label className="sr-only" htmlFor={`link-title-${link.id}`}>
+                Link {index + 1} title
+              </label>
+              <input
+                id={`link-title-${link.id}`}
+                name="linkTitle"
+                defaultValue={link.title}
+                maxLength={MAX_LINK_TITLE_LENGTH}
+                placeholder="Title (e.g. Merch store)"
+                className="h-10 min-w-0 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-48"
+              />
+              <label className="sr-only" htmlFor={`link-url-${link.id}`}>
+                Link {index + 1} URL
+              </label>
+              <input
+                id={`link-url-${link.id}`}
+                name="linkUrl"
+                type="text"
+                inputMode="url"
+                defaultValue={link.url}
+                placeholder="https://"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 font-mono text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              />
+              <button
+                type="button"
+                onClick={() => setLinks((prev) => prev.filter((l) => l.id !== link.id))}
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-border px-3 text-sm text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+              >
+                <Trash2 className="size-4" aria-hidden="true" />
+                <span className="sm:sr-only">Remove link {index + 1}</span>
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setLinks((prev) => [...prev, { id: `link-${nextLinkId.current++}`, title: "", url: "" }])}
+            disabled={links.length >= MAX_CUSTOM_LINKS}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-50"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {links.length >= MAX_CUSTOM_LINKS ? `Max ${MAX_CUSTOM_LINKS} links` : "Add link"}
+          </button>
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-sm font-semibold text-foreground">Stats shown on your page</legend>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {[
+              { name: "hideSubmissions", label: "Hide submissions", checked: settings.hideSubmissions },
+              { name: "hideAvgScore", label: "Hide avg score", checked: settings.hideAvgScore },
+              { name: "hideRank", label: "Hide rank", checked: settings.hideRank },
+            ].map((opt) => (
+              <label
+                key={opt.name}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 text-sm font-semibold text-foreground"
+              >
+                {opt.label}
+                <input type="checkbox" name={opt.name} defaultChecked={opt.checked} className="size-5 accent-primary" />
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-sm font-semibold text-foreground">Background</legend>
