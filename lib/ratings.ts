@@ -10,6 +10,7 @@ export interface RatingSummary {
 export interface RankedArtist {
   rank: number
   artist: string
+  userId: string | null
   avg: number
   reviews: number
   points: number
@@ -43,6 +44,7 @@ export async function getLeaderboard(limit = 50): Promise<RankedArtist[]> {
   const rows = (await sql`
     select
       max(s.submitted_by) as artist,
+      (array_agg(s.user_id order by s.created_at desc) filter (where s.user_id is not null))[1] as user_id,
       avg(r.score)::float as avg,
       count(*)::int as reviews,
       (sum(r.score) * ${POINTS_PER_SCORE})::int as points
@@ -51,6 +53,6 @@ export async function getLeaderboard(limit = 50): Promise<RankedArtist[]> {
     group by lower(trim(s.submitted_by))
     order by points desc, avg desc
     limit ${limit}
-  `) as { artist: string; avg: number; reviews: number; points: number }[]
-  return rows.map((r, i) => ({ rank: i + 1, ...r }))
+  `) as { artist: string; user_id: string | null; avg: number; reviews: number; points: number }[]
+  return rows.map(({ user_id, ...r }, i) => ({ rank: i + 1, userId: user_id, ...r }))
 }

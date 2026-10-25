@@ -72,7 +72,7 @@ async function getActiveTrackLine(trackId: string): Promise<LineId | null> {
 // whoever entered the line first. A later boost never passes an earlier one.
 export async function getQueue(): Promise<QueueItem[]> {
   const rows = (await sql`
-    SELECT track_id, url, title, submitted_by, source, line, boosted, created_at, audio_pathname
+    SELECT track_id, url, title, submitted_by, source, line, boosted, created_at, audio_pathname, user_id
     FROM submissions
     WHERE status = 'active'
     ORDER BY
@@ -91,7 +91,7 @@ export async function getQueue(): Promise<QueueItem[]> {
 // always line up underneath Now Playing.
 export async function getNowPlaying(): Promise<QueueItem | null> {
   const rows = (await sql`
-    SELECT track_id, url, title, submitted_by, source, line, boosted, created_at, audio_pathname
+    SELECT track_id, url, title, submitted_by, source, line, boosted, created_at, audio_pathname, user_id
     FROM submissions
     WHERE status = 'playing'
     ORDER BY played_at DESC NULLS LAST
@@ -111,6 +111,7 @@ function toQueueItem(r: Record<string, unknown>): QueueItem {
     boosted: r.boosted as boolean,
     createdAt: new Date(r.created_at as string).toISOString(),
     audioPathname: (r.audio_pathname as string | null) ?? null,
+    userId: (r.user_id as string | null) ?? null,
   }
 }
 

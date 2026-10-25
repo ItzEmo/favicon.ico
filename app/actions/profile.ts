@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { sql } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { normalizeInstagram } from "@/lib/account"
+import { parseMusicLinks, type MusicLink } from "@/lib/music-links"
 
 export interface ProfileState {
   ok: boolean
@@ -24,19 +25,26 @@ export async function updateProfile(
   }
 
   let instagram: string | null
+  let musicLinks: MusicLink[]
   try {
     instagram = normalizeInstagram(String(formData.get("instagram") ?? ""))
+    musicLinks = parseMusicLinks(
+      formData.getAll("linkTitle").map(String),
+      formData.getAll("linkUrl").map(String),
+    )
   } catch (error) {
     return { ok: false, message: (error as Error).message }
   }
 
   await sql`
     UPDATE "user"
-    SET name = ${name}, instagram = ${instagram}, "updatedAt" = now()
+    SET name = ${name}, instagram = ${instagram},
+        music_links = ${JSON.stringify(musicLinks)}::jsonb, "updatedAt" = now()
     WHERE id = ${session.user.id}
   `
 
   revalidatePath("/account")
   revalidatePath("/account/profile")
+  revalidatePath(`/artists/${session.user.id}`)
   return { ok: true, message: "Profile saved" }
 }

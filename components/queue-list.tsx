@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { sourceLabels, type QueueItem } from "@/components/track-types"
 import { LINES, type LineId } from "@/lib/lines"
 import { TrackRating, type RatingsData } from "@/components/track-rating"
+import { ArtistName } from "@/components/artist-name"
 
 // The tier a track can pay to jump to next.
 const NEXT_TIER: Record<LineId, LineId | null> = {
@@ -187,7 +188,9 @@ function QueueRow({
             <span className="rounded bg-secondary px-1.5 py-0.5 font-medium text-secondary-foreground">
               {sourceLabels[track.source]}
             </span>
-            <span className="truncate">by {track.submittedBy}</span>
+            <span className="truncate">
+              by <ArtistName name={track.submittedBy} userId={track.userId} />
+            </span>
           </div>
         </div>
 

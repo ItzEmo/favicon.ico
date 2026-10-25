@@ -1,6 +1,7 @@
 import "server-only"
 
 import { sql } from "@/lib/db"
+import { coerceMusicLinks, type MusicLink } from "@/lib/music-links"
 
 export interface AccountSubmission {
   trackId: string
@@ -13,6 +14,7 @@ export interface AccountSubmission {
 
 export interface ProfileExtras {
   instagram: string | null
+  musicLinks: MusicLink[]
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -108,9 +110,50 @@ export async function getUserSubmissions(userId: string): Promise<AccountSubmiss
 
 export async function getProfileExtras(userId: string): Promise<ProfileExtras> {
   const rows = (await sql`
-    SELECT instagram FROM "user" WHERE id = ${userId} LIMIT 1
-  `) as { instagram: string | null }[]
-  return { instagram: rows[0]?.instagram ?? null }
+    SELECT instagram, music_links FROM "user" WHERE id = ${userId} LIMIT 1
+  `) as { instagram: string | null; music_links: unknown }[]
+  return {
+    instagram: rows[0]?.instagram ?? null,
+    musicLinks: coerceMusicLinks(rows[0]?.music_links),
+  }
+}
+
+export interface PublicProfile {
+  id: string
+  name: string
+  image: string | null
+  instagram: string | null
+  musicLinks: MusicLink[]
+  joinedAt: string
+  stats: AccountStats
+}
+
+// Banned accounts are hidden from the public, so they resolve to null.
+export async function getPublicProfile(userId: string): Promise<PublicProfile | null> {
+  const rows = (await sql`
+    SELECT id, name, image, instagram, music_links, "createdAt" AS created_at
+    FROM "user"
+    WHERE id = ${userId} AND banned IS NOT TRUE
+    LIMIT 1
+  `) as {
+    id: string
+    name: string
+    image: string | null
+    instagram: string | null
+    music_links: unknown
+    created_at: string
+  }[]
+  const row = rows[0]
+  if (!row) return null
+  return {
+    id: row.id,
+    name: row.name,
+    image: row.image,
+    instagram: row.instagram,
+    musicLinks: coerceMusicLinks(row.music_links),
+    joinedAt: new Date(row.created_at).toISOString(),
+    stats: await getUserStats(row.id),
+  }
 }
 
 // Accepts "@handle", "handle", or any instagram.com/handle URL.
