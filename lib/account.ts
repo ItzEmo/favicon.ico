@@ -5,11 +5,13 @@ import { coerceMusicLinks, type MusicLink } from "@/lib/music-links"
 import {
   coerceCustomLinks,
   isLinkAccent,
+  isLinkEffect,
   isLinkHeaderStyle,
   type LinkHeaderStyle,
   type CustomLink,
   isPresetBackground,
   type LinkAccent,
+  type LinkEffect,
   type LinkBackground,
 } from "@/lib/link-page"
 
@@ -171,7 +173,7 @@ export interface LinkSettings {
   bio: string
   background: LinkBackground
   accent: LinkAccent
-  rain: boolean
+  effect: LinkEffect
   backgroundImage: string | null
   customLinks: CustomLink[]
   hideSubmissions: boolean
@@ -186,7 +188,7 @@ interface LinkRow {
   link_bio: string | null
   link_theme: string
   link_accent: string
-  link_rain: boolean
+  link_effect: string
   link_bg_image: string | null
   link_custom_links: unknown
   link_hide_submissions: boolean
@@ -206,7 +208,7 @@ function toLinkSettings(row: LinkRow): LinkSettings {
     bio: row.link_bio ?? "",
     background,
     accent: isLinkAccent(row.link_accent) ? row.link_accent : "violet",
-    rain: row.link_rain,
+    effect: isLinkEffect(row.link_effect) ? row.link_effect : "rain",
     backgroundImage: row.link_bg_image,
     customLinks: coerceCustomLinks(row.link_custom_links),
     hideSubmissions: row.link_hide_submissions,
@@ -218,7 +220,7 @@ function toLinkSettings(row: LinkRow): LinkSettings {
 
 export async function getLinkSettings(userId: string): Promise<LinkSettings | null> {
   const rows = (await sql`
-    SELECT handle, link_bio, link_theme, link_accent, link_rain, link_bg_image,
+    SELECT handle, link_bio, link_theme, link_accent, link_effect, link_bg_image,
            link_custom_links, link_hide_submissions, link_hide_avg, link_hide_rank, link_header
     FROM "user" WHERE id = ${userId} LIMIT 1
   `) as LinkRow[]

@@ -14,9 +14,51 @@ export const LINK_ACCENTS = {
   cyan: { label: "Cyan", color: "oklch(0.78 0.13 210)", foreground: "oklch(0.18 0.04 230)" },
   amber: { label: "Amber", color: "oklch(0.82 0.15 75)", foreground: "oklch(0.2 0.04 60)" },
   lime: { label: "Lime", color: "oklch(0.85 0.18 135)", foreground: "oklch(0.2 0.05 140)" },
+  red: { label: "Red", color: "oklch(0.63 0.23 27)", foreground: "oklch(0.98 0.01 27)" },
+  orange: { label: "Orange", color: "oklch(0.74 0.18 50)", foreground: "oklch(0.2 0.05 50)" },
+  yellow: { label: "Yellow", color: "oklch(0.92 0.17 100)", foreground: "oklch(0.22 0.05 100)" },
+  emerald: { label: "Emerald", color: "oklch(0.72 0.16 160)", foreground: "oklch(0.18 0.04 160)" },
+  teal: { label: "Teal", color: "oklch(0.7 0.12 190)", foreground: "oklch(0.16 0.03 190)" },
+  blue: { label: "Blue", color: "oklch(0.62 0.19 255)", foreground: "oklch(0.98 0.01 255)" },
+  indigo: { label: "Indigo", color: "oklch(0.55 0.2 275)", foreground: "oklch(0.98 0.01 275)" },
+  rose: { label: "Rose", color: "oklch(0.8 0.1 10)", foreground: "oklch(0.2 0.04 10)" },
+  silver: { label: "Silver", color: "oklch(0.88 0.01 260)", foreground: "oklch(0.18 0.01 260)" },
+  gold: { label: "Gold", color: "oklch(0.75 0.12 85)", foreground: "oklch(0.18 0.03 85)" },
 } as const
 
 export type LinkAccent = keyof typeof LINK_ACCENTS
+
+export const LINK_EFFECTS = {
+  none: { label: "No effect" },
+  rain: { label: "Rain" },
+  storm: { label: "Lightning & Thunder" },
+  snow: { label: "Snow" },
+  wind: { label: "Windy" },
+} as const
+
+export type LinkEffect = keyof typeof LINK_EFFECTS
+
+export function isLinkEffect(value: string): value is LinkEffect {
+  return value in LINK_EFFECTS
+}
+
+export const MAX_BG_BYTES = 10 * 1024 * 1024
+
+// Hosts we're willing to fetch GIFs from server-side, to avoid fetching arbitrary URLs.
+const GIF_HOSTS = [/^(media\d*|i)\.giphy\.com$/, /^(media\d*|c)\.tenor\.com$/]
+
+export function parseGifUrl(raw: string): URL {
+  let url: URL
+  try {
+    url = new URL(raw.trim())
+  } catch {
+    throw new Error("That isn't a valid link")
+  }
+  if (url.protocol !== "https:" || !GIF_HOSTS.some((h) => h.test(url.hostname))) {
+    throw new Error("Paste a direct GIF link from Giphy or Tenor (media.giphy.com / media.tenor.com)")
+  }
+  return url
+}
 
 export const MAX_BIO_LENGTH = 160
 export const MAX_CUSTOM_LINKS = 7

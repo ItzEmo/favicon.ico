@@ -728,7 +728,70 @@
   100% { translate: -1px 1px; }
 }
 
+/* Link page background effects */
+.link-snow,
+.link-wind,
+.link-lightning {
+  pointer-events: none;
+  overflow: hidden;
+}
+.link-snow__flake {
+  position: absolute;
+  top: -12px;
+  border-radius: 9999px;
+  background: var(--foreground);
+  filter: blur(0.5px);
+  animation: link-snow-fall linear infinite;
+  will-change: transform;
+}
+@keyframes link-snow-fall {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(var(--drift), 50vh, 0); }
+  100% { transform: translate3d(0, calc(100vh + 24px), 0); }
+}
+.link-wind__gust {
+  position: absolute;
+  left: 0;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, transparent, color-mix(in oklab, var(--foreground) 80%, transparent), transparent);
+  animation: link-wind-blow ease-in infinite;
+  will-change: transform;
+}
+@keyframes link-wind-blow {
+  0% { transform: translate3d(-40vw, 0, 0) rotate(-2deg); }
+  100% { transform: translate3d(120vw, -30px, 0) rotate(-4deg); }
+}
+.link-lightning {
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--foreground) 85%, transparent), transparent 70%);
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation: link-lightning-flash 7s infinite;
+}
+@keyframes link-lightning-flash {
+  0%, 60%, 100% { opacity: 0; }
+  61% { opacity: 0.85; }
+  62% { opacity: 0.1; }
+  63.5% { opacity: 0.7; }
+  66% { opacity: 0; }
+  88% { opacity: 0; }
+  89% { opacity: 0.5; }
+  91% { opacity: 0; }
+}
+.link-page--storm {
+  animation: link-thunder-shake 7s infinite;
+}
+@keyframes link-thunder-shake {
+  0%, 61%, 66%, 100% { translate: 0 0; }
+  62% { translate: -2px 1px; }
+  63% { translate: 2px -1px; }
+  64% { translate: -1px 1px; }
+  65% { translate: 1px 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .link-snow, .link-wind, .link-lightning { display: none; }
+  .link-page--storm { animation: none; }
   .social-pill { animation: none; opacity: 1; }
   .social-pill::after, .social-pill--tiktok:hover .social-pill__badge { animation: none; }
   .welcome-stage--ready .welcome-bubble:not(:empty) { animation: none; opacity: 1; scale: 1; }

@@ -9,7 +9,7 @@ import { glassFont } from "@/lib/glass-font"
 import { LINK_ACCENTS, LINK_BACKGROUNDS } from "@/lib/link-page"
 import { musicLinkLabel } from "@/lib/music-links"
 import { appleMusicEmbed, spotifyEmbed } from "@/lib/artist-links-types"
-import { RainBackdrop } from "@/components/rain-backdrop"
+import { LinkEffectBackdrop } from "@/components/link-effect-backdrop"
 import { ShareLinkButton } from "@/components/share-link-button"
 
 // Closest web font to the bubble lettering in the Emo's Radio logo.
@@ -82,10 +82,12 @@ export default async function LinkPage({ params }: Props) {
         fetchPriority="high"
         className="absolute inset-0 size-full object-cover"
       />
-      {link.rain && <RainBackdrop />}
+      <LinkEffectBackdrop effect={link.effect} />
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background/90" />
 
-      <div className="relative h-full overflow-y-auto overscroll-contain">
+      <div
+        className={`relative h-full overflow-y-auto overscroll-contain${link.effect === "storm" ? " link-page--storm" : ""}`}
+      >
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-7 px-5 pt-14 pb-10 sm:pt-20">
           <ShareLinkButton title={`${page.name} on Emo's Radio`} className="absolute top-4 right-4" />
 

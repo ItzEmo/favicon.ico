@@ -2,11 +2,12 @@
 
 import { useActionState, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Copy, ExternalLink, ImagePlus, Link2, Loader2, Plus, Trash2 } from "lucide-react"
+import { Check, ChevronDown, Copy, ExternalLink, Eye, EyeOff, ImagePlus, Link2, Loader2, Plus, Trash2 } from "lucide-react"
 import { updateLinkPage, type LinkPageState } from "@/app/actions/link-page"
 import {
   LINK_ACCENTS,
   LINK_BACKGROUNDS,
+  LINK_EFFECTS,
   LINK_HEADER_STYLES,
   MAX_BIO_LENGTH,
   MAX_CUSTOM_LINKS,
@@ -14,25 +15,28 @@ import {
   linkPath,
   type LinkAccent,
   type LinkBackground,
+  type LinkEffect,
+  type LinkHeaderStyle,
 } from "@/lib/link-page"
 import type { LinkSettings } from "@/lib/account"
 import { glassFont } from "@/lib/glass-font"
 import { cn } from "@/lib/utils"
 
-function RoundCheckbox({ type = "checkbox", ...props }: React.ComponentProps<"input">) {
+function SelectField({ id, children, ...props }: React.ComponentProps<"select">) {
   return (
-    <span className="relative inline-flex size-5 shrink-0">
-      <input
-        type={type}
+    <div className="relative">
+      <select
+        id={id}
         {...props}
-        className="peer size-5 cursor-pointer appearance-none rounded-full border border-foreground/25 bg-foreground/5 transition-colors checked:border-primary checked:bg-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      />
-      <Check
+        className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-input bg-background pr-10 pl-3 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {children}
+      </select>
+      <ChevronDown
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 m-auto size-3 text-primary opacity-0 transition-opacity peer-checked:opacity-100"
-        strokeWidth={3}
+        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
       />
-    </span>
+    </div>
   )
 }
 
@@ -46,6 +50,11 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
   const [accent, setAccent] = useState<LinkAccent>(settings.accent)
   const [bio, setBio] = useState(settings.bio)
   const [customImage, setCustomImage] = useState(settings.backgroundImage)
+  const [headerStyle, setHeaderStyle] = useState<LinkHeaderStyle>(settings.headerStyle)
+  const [hideStats, setHideStats] = useState(
+    settings.hideSubmissions || settings.hideAvgScore || settings.hideRank,
+  )
+  const [gifUrl, setGifUrl] = useState("")
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -61,16 +70,11 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
     window.setTimeout(() => setCopied(false), 2000)
   }
 
-  async function onPickBackground(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ""
-    if (!file) return
+  async function uploadBackground(init: RequestInit) {
     setUploadError(null)
     setUploading(true)
     try {
-      const body = new FormData()
-      body.append("file", file)
-      const res = await fetch("/api/account/link-bg", { method: "POST", body })
+      const res = await fetch("/api/account/link-bg", { method: "POST", ...init })
       const data = (await res.json()) as { image?: string; error?: string }
       if (!res.ok || !data.image) throw new Error(data.error ?? "Upload failed")
       setCustomImage(data.image)
@@ -81,6 +85,23 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
     } finally {
       setUploading(false)
     }
+  }
+
+  function onPickBackground(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    const body = new FormData()
+    body.append("file", file)
+    void uploadBackground({ body })
+  }
+
+  function onImportGif() {
+    if (!gifUrl.trim()) return
+    void uploadBackground({
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: gifUrl.trim() }),
+    }).then(() => setGifUrl(""))
   }
 
   return (
@@ -224,50 +245,57 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
           </button>
         </fieldset>
 
-        <fieldset className="flex flex-col gap-3">
-          <legend className="mb-2 text-sm font-semibold text-foreground">Page header</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="link-header" className="text-sm font-semibold text-foreground">
+            Page header
+          </label>
+          <SelectField
+            id="link-header"
+            name="headerStyle"
+            value={headerStyle}
+            onChange={(e) => setHeaderStyle(e.target.value as LinkHeaderStyle)}
+          >
             {Object.entries(LINK_HEADER_STYLES).map(([key, style]) => (
-              <label
-                key={key}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 has-[:checked]:border-primary"
-              >
-                <span className="flex flex-col">
-                  <span
-                    className={
-                      key === "glass"
-                        ? `${glassFont.className} glass-text text-lg leading-tight font-normal uppercase`
-                        : "text-sm font-semibold text-foreground"
-                    }
-                  >
-                    {style.label}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{style.description}</span>
-                </span>
-                <RoundCheckbox type="radio" name="headerStyle" value={key} defaultChecked={settings.headerStyle === key} />
-              </label>
+              <option key={key} value={key}>
+                {style.label}
+              </option>
             ))}
+          </SelectField>
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
+            <span
+              className={
+                headerStyle === "glass"
+                  ? `${glassFont.className} glass-text text-lg leading-tight font-normal uppercase`
+                  : "text-sm font-semibold text-foreground"
+              }
+            >
+              {LINK_HEADER_STYLES[headerStyle].label}
+            </span>
+            <span className="text-xs text-muted-foreground">{LINK_HEADER_STYLES[headerStyle].description}</span>
           </div>
-        </fieldset>
+        </div>
 
-        <fieldset className="flex flex-col gap-3">
-          <legend className="mb-2 text-sm font-semibold text-foreground">Stats shown on your page</legend>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {[
-              { name: "hideSubmissions", label: "Hide submissions", checked: settings.hideSubmissions },
-              { name: "hideAvgScore", label: "Hide avg score", checked: settings.hideAvgScore },
-              { name: "hideRank", label: "Hide rank", checked: settings.hideRank },
-            ].map((opt) => (
-              <label
-                key={opt.name}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 text-sm font-semibold text-foreground"
-              >
-                {opt.label}
-                <RoundCheckbox name={opt.name} defaultChecked={opt.checked} />
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background/60 px-4 py-3">
+          <span className="flex flex-col">
+            <span className="text-sm font-semibold text-foreground">Stats</span>
+            <span className="text-xs text-muted-foreground">Submissions, avg score and rank on your page.</span>
+          </span>
+          {hideStats && <input type="hidden" name="hideStats" value="on" />}
+          <button
+            type="button"
+            aria-pressed={!hideStats}
+            onClick={() => setHideStats((v) => !v)}
+            className={cn(
+              "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              hideStats
+                ? "border-border bg-foreground/5 text-muted-foreground hover:text-foreground"
+                : "border-primary bg-primary/20 text-primary",
+            )}
+          >
+            {hideStats ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+            {hideStats ? "Stats hidden" : "Stats shown"}
+          </button>
+        </div>
 
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-sm font-semibold text-foreground">Background</legend>
@@ -302,7 +330,7 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
                 {/* eslint-disable-next-line @next/next/no-img-element -- user upload */}
                 <img src={customImage} alt="" className="absolute inset-0 size-full object-cover" />
                 <span className="relative w-full bg-background/70 px-2 py-1 text-xs font-semibold text-foreground">
-                  Your photo
+                  {customImage.includes(".gif") ? "Your GIF" : "Your photo"}
                 </span>
               </label>
             ) : null}
@@ -317,10 +345,43 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
               ) : (
                 <ImagePlus className="size-5" aria-hidden="true" />
               )}
-              {customImage ? "Replace photo" : "Upload photo"}
+              {customImage ? "Replace photo / GIF" : "Upload photo / GIF"}
             </button>
           </div>
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onPickBackground} className="sr-only" tabIndex={-1} aria-hidden="true" />
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <label htmlFor="link-gif-url" className="sr-only">
+              GIF link
+            </label>
+            <input
+              id="link-gif-url"
+              type="url"
+              inputMode="url"
+              value={gifUrl}
+              onChange={(e) => setGifUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" || e.nativeEvent.isComposing || e.keyCode === 229) return
+                e.preventDefault()
+                onImportGif()
+              }}
+              placeholder="Paste a GIF link from Giphy or Tenor"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 font-mono text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            />
+            <button
+              type="button"
+              onClick={onImportGif}
+              disabled={uploading || !gifUrl.trim()}
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-50"
+            >
+              Use GIF
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Upload a JPG, PNG, WEBP or animated GIF up to 10 MB, or paste a direct GIF link (right-click the GIF, then Copy image address).
+          </p>
           {uploadError && (
             <p role="alert" className="text-sm text-destructive">
               {uploadError}
@@ -353,13 +414,19 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
           </div>
         </fieldset>
 
-        <label className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background/60 px-4 py-3">
-          <span className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground">Rain effect</span>
-            <span className="text-xs text-muted-foreground">Falling rain over your background, like the unlock screen.</span>
-          </span>
-          <RoundCheckbox name="rain" defaultChecked={settings.rain} />
-        </label>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="link-effect" className="text-sm font-semibold text-foreground">
+            Background effect
+          </label>
+          <SelectField id="link-effect" name="effect" defaultValue={settings.effect}>
+            {(Object.entries(LINK_EFFECTS) as [LinkEffect, { label: string }][]).map(([key, effect]) => (
+              <option key={key} value={key}>
+                {effect.label}
+              </option>
+            ))}
+          </SelectField>
+          <p className="text-xs text-muted-foreground">Animated weather over your background.</p>
+        </div>
 
         <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
           <p

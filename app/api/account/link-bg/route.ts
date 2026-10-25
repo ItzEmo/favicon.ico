@@ -3,10 +3,9 @@ import { del, get, put } from "@vercel/blob"
 import { auth } from "@/lib/auth"
 import { sql } from "@/lib/db"
 import { getLinkSettings } from "@/lib/account"
-import { linkPath } from "@/lib/link-page"
+import { MAX_BG_BYTES, linkPath, parseGifUrl } from "@/lib/link-page"
 import { revalidatePath } from "next/cache"
 
-const MAX_BYTES = 6 * 1024 * 1024
 const TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -39,12 +38,29 @@ export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })
   if (!session?.user) return NextResponse.json({ error: "Please sign in" }, { status: 401 })
 
-  const form = await request.formData()
-  const file = form.get("file")
-  if (!(file instanceof File)) return NextResponse.json({ error: "Choose an image" }, { status: 400 })
+  let file: Blob
+  if (request.headers.get("content-type")?.includes("application/json")) {
+    try {
+      const { url } = (await request.json()) as { url?: string }
+      const gifUrl = parseGifUrl(String(url ?? ""))
+      const res = await fetch(gifUrl, { redirect: "error", signal: AbortSignal.timeout(10000) })
+      const type = res.headers.get("content-type")?.split(";")[0] ?? ""
+      if (!res.ok || !TYPES[type]) throw new Error("Couldn't load that GIF. Use the direct .gif link.")
+      if (Number(res.headers.get("content-length") ?? 0) > MAX_BG_BYTES) throw new Error("GIF must be under 10 MB")
+      file = await res.blob()
+    } catch (error) {
+      const message = error instanceof Error && !error.name.includes("Abort") ? error.message : "Couldn't load that GIF"
+      return NextResponse.json({ error: message }, { status: 400 })
+    }
+  } else {
+    const form = await request.formData()
+    const upload = form.get("file")
+    if (!(upload instanceof File)) return NextResponse.json({ error: "Choose an image or GIF" }, { status: 400 })
+    file = upload
+  }
   const ext = TYPES[file.type]
   if (!ext) return NextResponse.json({ error: "Use a JPG, PNG, WEBP or GIF" }, { status: 400 })
-  if (file.size > MAX_BYTES) return NextResponse.json({ error: "Image must be under 6 MB" }, { status: 400 })
+  if (file.size > MAX_BG_BYTES) return NextResponse.json({ error: "File must be under 10 MB" }, { status: 400 })
 
   const current = await getLinkSettings(session.user.id)
   const blob = await put(`link-bg/${session.user.id}.${ext}`, file, {
