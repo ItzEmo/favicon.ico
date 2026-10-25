@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { type Track } from "@/components/track-types"
 import { LINES, LINE_ORDER, formatPrice, type LineId } from "@/lib/lines"
 import { isLineOpen, type QueueStatus } from "@/lib/queue-status"
+import { rememberTrack } from "@/lib/my-tracks"
 import {
   createFreeSubmission,
   createPaidSubmission,
@@ -76,6 +77,7 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
         "skipplus",
         bonus ? toInput(bonus) : null,
       )
+      rememberTrack(track.id, bonus?.id)
       setPendingTrack(track)
       setBonusTrack(bonus)
       setCheckout({
@@ -110,6 +112,7 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
           source: track.source,
           audioPathname: track.audioPathname ?? null,
         })
+        rememberTrack(track.id)
         setSubmitted({ track, line })
       } else {
         const { clientSecret, sessionId, publishableKey } = await createPaidSubmission(
@@ -123,6 +126,7 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
           },
           line,
         )
+        rememberTrack(track.id)
         setPendingTrack(track)
         setCheckout({
           clientSecret,

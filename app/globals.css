@@ -737,3 +737,27 @@
   .unlock-rain { display: none; }
   .unlock-gate--leaving .unlock-content { transform: none; }
 }
+
+/* Queue + preview notices */
+@keyframes notice-pop {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.notice-pop { animation: notice-pop 0.45s cubic-bezier(0.22, 1.2, 0.36, 1) both; }
+
+@keyframes queue-ring {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 55%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in oklch, var(--primary) 0%, transparent); }
+}
+.queue-alert-urgent { animation: notice-pop 0.45s cubic-bezier(0.22, 1.2, 0.36, 1) both, queue-ring 1.6s ease-out 0.45s infinite; }
+
+@keyframes queue-bell {
+  0%, 60%, 100% { rotate: 0deg; }
+  10%, 30% { rotate: -14deg; }
+  20%, 40% { rotate: 14deg; }
+}
+.queue-bell { transform-origin: 50% 10%; animation: queue-bell 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .notice-pop, .queue-alert-urgent, .queue-bell { animation: none; }
+}
