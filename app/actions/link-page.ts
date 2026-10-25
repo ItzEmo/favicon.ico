@@ -8,6 +8,7 @@ import { getLinkSettings } from "@/lib/account"
 import {
   MAX_BIO_LENGTH,
   isLinkAccent,
+  isLinkEffect,
   isLinkHeaderStyle,
   isPresetBackground,
   linkPath,
@@ -51,10 +52,9 @@ export async function updateLinkPage(
   const accent = String(formData.get("accent") ?? "violet")
   if (!isLinkAccent(accent)) return { ok: false, message: "Pick an accent color" }
 
-  const rain = formData.get("rain") === "on"
-  const hideSubmissions = formData.get("hideSubmissions") === "on"
-  const hideAvg = formData.get("hideAvgScore") === "on"
-  const hideRank = formData.get("hideRank") === "on"
+  const effect = String(formData.get("effect") ?? "rain")
+  if (!isLinkEffect(effect)) return { ok: false, message: "Pick a background effect" }
+  const hideStats = formData.get("hideStats") === "on"
   const headerStyle = String(formData.get("headerStyle") ?? "avatar")
   if (!isLinkHeaderStyle(headerStyle)) return { ok: false, message: "Pick a header style" }
 
@@ -72,10 +72,10 @@ export async function updateLinkPage(
     await sql`
       UPDATE "user"
       SET handle = ${handle}, link_bio = ${bio || null}, link_theme = ${background},
-          link_accent = ${accent}, link_rain = ${rain},
+          link_accent = ${accent}, link_effect = ${effect}, link_rain = ${effect === "rain"},
           link_custom_links = ${JSON.stringify(customLinks)}::jsonb,
-          link_hide_submissions = ${hideSubmissions}, link_hide_avg = ${hideAvg},
-          link_hide_rank = ${hideRank}, link_header = ${headerStyle}, "updatedAt" = now()
+          link_hide_submissions = ${hideStats}, link_hide_avg = ${hideStats},
+          link_hide_rank = ${hideStats}, link_header = ${headerStyle}, "updatedAt" = now()
       WHERE id = ${session.user.id}
     `
   } catch (error) {
