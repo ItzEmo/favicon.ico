@@ -6,7 +6,8 @@ import { ChevronLeft, UserRoundPen } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { ProfileForm } from "@/components/profile-form"
 import { auth } from "@/lib/auth"
-import { getProfileExtras } from "@/lib/account"
+import { getLinkSettings, getProfileExtras } from "@/lib/account"
+import { LinkPageEditor } from "@/components/link-page-editor"
 
 export const metadata: Metadata = {
   title: "Edit Profile",
@@ -18,7 +19,14 @@ export default async function ProfilePage() {
   if (!session?.user) redirect("/sign-in")
 
   const { user } = session
-  const { instagram, musicLinks } = await getProfileExtras(user.id)
+  const [{ instagram, musicLinks }, linkSettings, requestHeaders] = await Promise.all([
+    getProfileExtras(user.id),
+    getLinkSettings(user.id),
+    headers(),
+  ])
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000"
+  const proto = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")
+  const origin = `${proto}://${host}`
 
   return (
     <>
@@ -44,12 +52,7 @@ export default async function ProfilePage() {
           instagram={instagram}
           musicLinks={musicLinks}
         />
-        <Link
-          href={`/artists/${user.id}`}
-          className="inline-flex w-fit items-center gap-1 self-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
-        >
-          View your public profile
-        </Link>
+        {linkSettings && <LinkPageEditor settings={linkSettings} origin={origin} />}
       </section>
     </>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { ChevronsRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UnlockMusic, hasArtistMusic } from '@/components/unlock-music'
@@ -28,6 +29,13 @@ const RAIN_DROPS = Array.from({ length: 70 }, (_, i) => ({
 }))
 
 export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
+  const pathname = usePathname()
+  // Shared artist link pages are opened from other apps; don't gate them.
+  if (pathname?.startsWith('/u/')) return null
+  return <UnlockGateScreen links={links} />
+}
+
+function UnlockGateScreen({ links }: { links: ArtistLinks }) {
   const [phase, setPhase] = useState<Phase>('locked')
   const [progress, setProgress] = useState(0)
   const [dragging, setDragging] = useState(false)
