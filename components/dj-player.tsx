@@ -69,12 +69,10 @@ export function DjPlayer({ showUpNext = true }: { showUpNext?: boolean }) {
     playing,
     current,
     limit,
-    previewEnded,
     volume,
     busy,
     togglePlay,
     seek,
-    playFullAnyway,
     setVolume,
     putOnAir,
     markPlayed,
@@ -159,7 +157,7 @@ export function DjPlayer({ showUpNext = true }: { showUpNext?: boolean }) {
           {isFree ? (
             <span className="inline-flex items-center gap-1 rounded bg-accent/20 px-2 py-0.5 text-xs font-medium text-accent-foreground">
               <Clock className="size-3" aria-hidden="true" />
-              1:30 preview
+              Pause prompt at 1:30
             </span>
           ) : null}
         </div>
@@ -189,21 +187,6 @@ export function DjPlayer({ showUpNext = true }: { showUpNext?: boolean }) {
                   {fmt(limit)}
                 </span>
               </div>
-
-              {previewEnded ? (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2">
-                  <span className="text-xs font-medium text-accent-foreground">
-                    Free preview limit (1:30) reached.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={playFullAnyway}
-                    className="text-xs font-bold uppercase tracking-wider text-primary hover:underline"
-                  >
-                    Play full anyway
-                  </button>
-                </div>
-              ) : null}
 
               <div className="mt-5 flex items-center justify-center gap-6">
                 <span aria-hidden="true" className="size-16" />

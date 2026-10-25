@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import useSWR, { type KeyedMutator } from "swr"
 import type { QueueItem } from "@/components/track-types"
 import { finishAndPlayNext, playTrack } from "@/app/actions/admin"
+import { PreviewPausePrompt } from "@/components/preview-pause-prompt"
 
 export const FREE_PREVIEW_SECONDS = 90
 
@@ -21,12 +22,13 @@ type DjAudioContextValue = {
   current: number
   duration: number
   limit: number
-  previewEnded: boolean
+  previewPrompt: boolean
   volume: number
   busy: boolean
   togglePlay: () => void
   seek: (time: number) => void
-  playFullAnyway: () => void
+  pauseFromPrompt: () => void
+  dismissPreviewPrompt: () => void
   setVolume: (volume: number) => void
   putOnAir: (trackId: string) => Promise<void>
   markPlayed: () => Promise<void>
@@ -55,15 +57,15 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
   const [playing, setPlaying] = useState(false)
   const [current, setCurrent] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [previewEnded, setPreviewEnded] = useState(false)
-  const [overridePreview, setOverridePreview] = useState(false)
+  const [previewPrompt, setPreviewPrompt] = useState(false)
+  const [promptHandled, setPromptHandled] = useState(false)
   const [volume, setVolumeState] = useState(0.8)
   const [busy, setBusy] = useState(false)
 
   const trackId = track?.trackId
   const hasAudio = Boolean(track?.audioPathname)
   const isFree = track?.line === "free"
-  const limit = isFree && !overridePreview ? FREE_PREVIEW_SECONDS : duration
+  const limit = duration
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem(VOLUME_STORAGE_KEY))
@@ -80,8 +82,8 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
     setPlaying(false)
     setCurrent(0)
     setDuration(0)
-    setPreviewEnded(false)
-    setOverridePreview(false)
+    setPreviewPrompt(false)
+    setPromptHandled(false)
   }, [trackId])
 
   const setVolume = useCallback((next: number) => {
@@ -102,13 +104,21 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
     if (!el) return
     el.currentTime = time
     setCurrent(time)
-    if (time < FREE_PREVIEW_SECONDS) setPreviewEnded(false)
+    if (time < FREE_PREVIEW_SECONDS) {
+      setPreviewPrompt(false)
+      setPromptHandled(false)
+    }
   }, [])
 
-  const playFullAnyway = useCallback(() => {
-    setOverridePreview(true)
-    setPreviewEnded(false)
-    void audioRef.current?.play()
+  const pauseFromPrompt = useCallback(() => {
+    audioRef.current?.pause()
+    setPreviewPrompt(false)
+    setPromptHandled(true)
+  }, [])
+
+  const dismissPreviewPrompt = useCallback(() => {
+    setPreviewPrompt(false)
+    setPromptHandled(true)
   }, [])
 
   const putOnAir = useCallback(
@@ -138,9 +148,8 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
     const el = audioRef.current
     if (!el) return
     setCurrent(el.currentTime)
-    if (isFree && !overridePreview && el.currentTime >= FREE_PREVIEW_SECONDS) {
-      el.pause()
-      setPreviewEnded(true)
+    if (isFree && !promptHandled && !previewPrompt && el.currentTime >= FREE_PREVIEW_SECONDS) {
+      setPreviewPrompt(true)
     }
   }
 
@@ -154,12 +163,13 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
     current,
     duration,
     limit,
-    previewEnded,
+    previewPrompt,
     volume,
     busy,
     togglePlay,
     seek,
-    playFullAnyway,
+    pauseFromPrompt,
+    dismissPreviewPrompt,
     setVolume,
     putOnAir,
     markPlayed,
@@ -168,6 +178,12 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
   return (
     <DjAudioContext.Provider value={value}>
       {children}
+      <PreviewPausePrompt
+        open={previewPrompt && playing}
+        title={track?.title ?? ""}
+        onPause={pauseFromPrompt}
+        onKeepPlaying={dismissPreviewPrompt}
+      />
       {hasAudio && track ? (
         <audio
           ref={audioRef}

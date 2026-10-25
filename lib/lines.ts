@@ -45,7 +45,7 @@ export const LINES: Record<LineId, LineConfig> = {
     shortName: "Free",
     priceInCents: 0,
     rank: 3,
-    blurb: "No cost. Gets 1:30 of play time and is reviewed after all paid lines.",
+    blurb: "No cost. Reviewed after all paid lines — the host may pause around 1:30.",
   },
 }
 

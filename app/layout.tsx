@@ -8,6 +8,7 @@ import { isAdmin } from '@/lib/admin-auth'
 import { UnlockGate } from '@/components/unlock-gate'
 import { DjAudioProvider } from '@/components/dj-audio-provider'
 import { DjMiniPlayer } from '@/components/dj-mini-player'
+import { QueueAlert } from '@/components/queue-alert'
 import { getArtistLinks } from '@/lib/artist-links'
 import './globals.css'
 
@@ -79,6 +80,7 @@ export default async function RootLayout({
           </div>
         )}
         <HoverMascot />
+        <QueueAlert />
         <UnlockGate links={musicLinks} />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

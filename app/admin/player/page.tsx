@@ -19,7 +19,7 @@ export default async function AdminPlayerPage() {
         eyebrow="Host only"
         title="DJ"
         accent="Player"
-        description="Play through tonight's queue in order. Uploaded tracks play right here; free-line submissions get a 1:30 preview. Mark each one played to advance."
+        description="Play through tonight's queue in order. Uploaded tracks play right here; free-line submissions play in full, with a pause prompt at 1:30. Mark each one played to advance."
       />
       <section className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
         <DjPlayer />
