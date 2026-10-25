@@ -77,7 +77,7 @@ export default async function AdminPage() {
         aria-label="Admin sections"
         className="border-b border-border/60"
       >
-        <ul className="mx-auto flex w-full max-w-2xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
+        <ul className="no-scrollbar mx-auto flex w-full max-w-2xl snap-x gap-2 overflow-x-auto overscroll-x-contain px-4 py-3 [mask-image:linear-gradient(to_right,transparent,black_1.5rem,black_calc(100%-1.5rem),transparent)] sm:px-6">
           {SECTIONS.map(({ id, label, icon: Icon }) => (
             <li key={id}>
               <a

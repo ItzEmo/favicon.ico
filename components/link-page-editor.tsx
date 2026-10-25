@@ -28,13 +28,13 @@ function SelectField({ id, children, ...props }: React.ComponentProps<"select">)
       <select
         id={id}
         {...props}
-        className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-input bg-background pr-10 pl-3 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      >
-        {children}
-      </select>
-      <ChevronDown
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+className="h-11 w-full cursor-pointer appearance-none rounded-full border border-foreground/10 bg-foreground/5 pr-11 pl-5 text-sm font-semibold text-foreground shadow-inner backdrop-blur-md transition-colors outline-none hover:bg-foreground/10 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/40 [&>option]:bg-card [&>option]:text-foreground"
+  >
+  {children}
+  </select>
+  <ChevronDown
+  aria-hidden="true"
+  className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-muted-foreground"
       />
     </div>
   )
