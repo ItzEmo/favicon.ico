@@ -1,7 +1,9 @@
 import "server-only"
 
 import { betterAuth } from "better-auth"
+import { APIError } from "better-auth/api"
 import { pool } from "@/lib/db"
+import { isUserBanned } from "@/lib/users"
 
 const googleConfigured = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
@@ -54,6 +56,18 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          if (await isUserBanned(session.userId)) {
+            throw new APIError("FORBIDDEN", { message: "This account has been banned." })
+          }
+          return { data: session }
+        },
+      },
+    },
   },
   ...(process.env.NODE_ENV === "development"
     ? {
