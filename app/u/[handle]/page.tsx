@@ -111,7 +111,7 @@ export default async function LinkPage({ params }: Props) {
                 </h1>
               ) : link.headerStyle === "glass" ? (
                 <h1
-                  className={`${glassFont.className} glass-text max-w-full text-balance break-words text-6xl leading-none font-bold uppercase sm:text-7xl`}
+                  className={`${glassFont.className} glass-text max-w-full text-balance break-words text-6xl leading-none font-normal uppercase sm:text-7xl`}
                 >
                   {page.name}
                 </h1>

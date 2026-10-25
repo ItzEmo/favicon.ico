@@ -236,7 +236,7 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
                   <span
                     className={
                       key === "glass"
-                        ? `${glassFont.className} glass-text text-lg leading-tight font-bold uppercase`
+                        ? `${glassFont.className} glass-text text-lg leading-tight font-normal uppercase`
                         : "text-sm font-semibold text-foreground"
                     }
                   >

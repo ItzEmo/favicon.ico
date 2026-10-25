@@ -1,4 +1,4 @@
-import { Playfair_Display } from "next/font/google"
+import { Bagel_Fat_One } from "next/font/google"
 
-// Closest web serif to the lettering in the Pixelbuddha glass text effect.
-export const glassFont = Playfair_Display({ weight: ["600", "700"], subsets: ["latin"], display: "swap" })
+// Puffy, blobby display face closest to the liquid-glass bubble lettering reference.
+export const glassFont = Bagel_Fat_One({ weight: "400", subsets: ["latin"], display: "swap" })
