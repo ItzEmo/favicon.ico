@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users } from "lucide-react"
+import { AdminUsers } from "@/components/admin-users"
+import { getAllUsers } from "@/lib/users"
 import { DjPlayer } from "@/components/dj-player"
 import { AdminQueueHistory } from "@/components/admin-queue-history"
 import { getArtistLinkSettings } from "@/lib/artist-links"
@@ -26,6 +28,7 @@ export const metadata = {
 const SECTIONS = [
   { id: "player", label: "Player", icon: Headphones },
   { id: "queue", label: "Queue", icon: ListMusic },
+  { id: "accounts", label: "Accounts", icon: Users },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
   { id: "arena", label: "Arena", icon: Swords },
@@ -47,12 +50,13 @@ function SectionHeading({ icon: Icon, title, note }: { icon: typeof Swords; titl
 
 export default async function AdminPage() {
   if (!(await isAdmin())) notFound()
-  const [battles, posts, vaultEntries, musicLinks, queueStatus] = await Promise.all([
+  const [battles, posts, vaultEntries, musicLinks, queueStatus, users] = await Promise.all([
     getBattles(),
     getPosts(),
     getVaultEntries(),
     getArtistLinkSettings(),
     getQueueStatus(),
+    getAllUsers(),
   ])
   const archivedTrackIds = vaultEntries.flatMap((e) => (e.trackId ? [e.trackId] : []))
 
@@ -100,6 +104,15 @@ export default async function AdminPage() {
           <AdminQueueSwitches status={queueStatus} />
           <AdminClearQueue />
           <AdminQueue archivedTrackIds={archivedTrackIds} />
+        </section>
+
+        <section id="accounts" className="scroll-mt-36">
+          <SectionHeading
+            icon={Users}
+            title="Accounts"
+            note="Everyone who has signed up. Banning signs them out right away and stops them from signing back in."
+          />
+          <AdminUsers users={users} />
         </section>
 
         <section id="history" className="scroll-mt-36">

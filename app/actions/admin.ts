@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { del } from "@vercel/blob"
 import { sql } from "@/lib/db"
-import { requireAdmin, signInAdmin, signOutAdmin } from "@/lib/admin-auth"
+import { ADMIN_EMAIL, requireAdmin, signInAdmin, signOutAdmin } from "@/lib/admin-auth"
 
 export type AdminLoginState = { ok: boolean; error?: string }
 
@@ -20,6 +20,37 @@ export async function adminLogin(
 
 export async function adminLogout(): Promise<void> {
   await signOutAdmin()
+  revalidatePath("/admin")
+}
+
+// Ban an account: flag it and end every active session so they're signed out
+// immediately. The sign-in hook in lib/auth.ts keeps them from coming back.
+export async function banUser(userId: string, reason: string): Promise<void> {
+  await requireAdmin()
+  const id = String(userId ?? "")
+  const cleanReason = String(reason ?? "").trim().slice(0, 200) || null
+  const rows = (await sql`
+    SELECT email FROM public."user" WHERE id = ${id} LIMIT 1
+  `) as { email: string }[]
+  if (!rows[0]) throw new Error("Account not found")
+  if (rows[0].email.toLowerCase() === ADMIN_EMAIL) throw new Error("You can't ban the admin account")
+
+  await sql`
+    UPDATE public."user"
+    SET banned = true, ban_reason = ${cleanReason}, banned_at = now()
+    WHERE id = ${id}
+  `
+  await sql`DELETE FROM public.session WHERE "userId" = ${id}`
+  revalidatePath("/admin")
+}
+
+export async function unbanUser(userId: string): Promise<void> {
+  await requireAdmin()
+  await sql`
+    UPDATE public."user"
+    SET banned = false, ban_reason = NULL, banned_at = NULL
+    WHERE id = ${String(userId ?? "")}
+  `
   revalidatePath("/admin")
 }
 
