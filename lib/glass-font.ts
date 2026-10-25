@@ -1,4 +1,18 @@
-import { Bagel_Fat_One } from "next/font/google"
+import localFont from "next/font/local"
 
-// Puffy, blobby display face closest to the liquid-glass bubble lettering reference.
-export const glassFont = Bagel_Fat_One({ weight: "400", subsets: ["latin"], display: "swap" })
+export const glassFont = localFont({
+  src: "../app/fonts/super-maples.ttf",
+  display: "swap",
+})
+
+export const discoFont = localFont({
+  src: "../app/fonts/70s-disco.otf",
+  display: "swap",
+  preload: false,
+})
+
+export const travelersFont = localFont({
+  src: "../app/fonts/air-travelers.otf",
+  display: "swap",
+  preload: false,
+})

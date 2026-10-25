@@ -6,6 +6,7 @@ import {
   coerceCustomLinks,
   isLinkAccent,
   isLinkEffect,
+  isAvailableHeaderStyle,
   isLinkHeaderStyle,
   type LinkHeaderStyle,
   type CustomLink,
@@ -214,7 +215,11 @@ function toLinkSettings(row: LinkRow): LinkSettings {
     hideSubmissions: row.link_hide_submissions,
     hideAvgScore: row.link_hide_avg,
     hideRank: row.link_hide_rank,
-    headerStyle: isLinkHeaderStyle(row.link_header) ? row.link_header : "avatar",
+    headerStyle: isAvailableHeaderStyle(row.link_header)
+      ? row.link_header
+      : isLinkHeaderStyle(row.link_header)
+        ? "name"
+        : "avatar",
   }
 }
 
