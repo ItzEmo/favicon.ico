@@ -20,6 +20,7 @@ import {
 } from "@/lib/link-page"
 import type { LinkSettings } from "@/lib/account"
 import { discoFont, glassFont, travelersFont } from "@/lib/glass-font"
+import { GlassFilterDefs } from "@/components/glass-filter-defs"
 import { cn } from "@/lib/utils"
 
 function SelectField({ id, children, ...props }: React.ComponentProps<"select">) {
@@ -262,10 +263,11 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
             ))}
           </SelectField>
           <div className="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
+            {headerStyle === "glass" && <GlassFilterDefs />}
             <span
               className={
                 headerStyle === "glass"
-                  ? `${glassFont.className} glass-text text-lg leading-tight font-normal uppercase`
+                  ? `${glassFont.className} glass-text glass-text--sm text-2xl leading-tight font-normal uppercase`
                   : headerStyle === "disco"
                     ? `${discoFont.className} text-xl leading-tight text-foreground`
                     : headerStyle === "travelers"
