@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { Modak } from "next/font/google"
 import { ArrowUpRight } from "lucide-react"
 import { getLinkPage } from "@/lib/account"
+import { glassFont } from "@/lib/glass-font"
 import { LINK_ACCENTS, LINK_BACKGROUNDS } from "@/lib/link-page"
 import { musicLinkLabel } from "@/lib/music-links"
 import { appleMusicEmbed, spotifyEmbed } from "@/lib/artist-links-types"
@@ -105,6 +106,12 @@ export default async function LinkPage({ params }: Props) {
               {link.headerStyle === "name" ? (
                 <h1
                   className={`${bubbleFont.className} max-w-full text-balance break-words text-7xl leading-[0.85] text-foreground/90 uppercase sm:text-8xl [-webkit-text-stroke:2px_var(--foreground)] [text-shadow:0_0_2px_var(--foreground),0_4px_24px_var(--primary),0_2px_16px_var(--background)]`}
+                >
+                  {page.name}
+                </h1>
+              ) : link.headerStyle === "glass" ? (
+                <h1
+                  className={`${glassFont.className} glass-text max-w-full text-balance break-words text-6xl leading-none font-normal uppercase sm:text-7xl`}
                 >
                   {page.name}
                 </h1>

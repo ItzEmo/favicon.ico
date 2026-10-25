@@ -16,6 +16,7 @@ import {
   type LinkBackground,
 } from "@/lib/link-page"
 import type { LinkSettings } from "@/lib/account"
+import { glassFont } from "@/lib/glass-font"
 import { cn } from "@/lib/utils"
 
 function RoundCheckbox({ type = "checkbox", ...props }: React.ComponentProps<"input">) {
@@ -232,7 +233,15 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
                 className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 has-[:checked]:border-primary"
               >
                 <span className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">{style.label}</span>
+                  <span
+                    className={
+                      key === "glass"
+                        ? `${glassFont.className} glass-text text-lg leading-tight font-normal uppercase`
+                        : "text-sm font-semibold text-foreground"
+                    }
+                  >
+                    {style.label}
+                  </span>
                   <span className="text-xs text-muted-foreground">{style.description}</span>
                 </span>
                 <RoundCheckbox type="radio" name="headerStyle" value={key} defaultChecked={settings.headerStyle === key} />
