@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useMemo, useState, useTransition } from "react"
 import { Ban, Search, ShieldCheck, Undo2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -100,7 +101,7 @@ export function AdminUsers({ users }: { users: AdminUser[] }) {
   )
 }
 
-function UserRow({ user }: { user: AdminUser }) {
+export function UserRow({ user, linkToDetail = true }: { user: AdminUser; linkToDetail?: boolean }) {
   const [confirming, setConfirming] = useState(false)
   const [reason, setReason] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -127,7 +128,7 @@ function UserRow({ user }: { user: AdminUser }) {
         user.banned ? "border-destructive/50" : "border-border",
       )}
     >
-      <div className="flex items-center gap-3">
+      <div className="relative flex items-center gap-3">
         <div
           className={cn(
             "flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-sm font-bold text-secondary-foreground",
@@ -150,7 +151,16 @@ function UserRow({ user }: { user: AdminUser }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="flex items-center gap-2 truncate text-sm font-bold text-foreground">
-            <span className="truncate">{user.name || "Unnamed"}</span>
+            {linkToDetail ? (
+              <Link
+                href={`/admin/accounts/${encodeURIComponent(user.id)}`}
+                className="truncate underline-offset-4 after:absolute after:inset-0 hover:text-primary hover:underline"
+              >
+                {user.name || "Unnamed"}
+              </Link>
+            ) : (
+              <span className="truncate">{user.name || "Unnamed"}</span>
+            )}
             {isAdminAccount ? (
               <ShieldCheck className="size-3.5 shrink-0 text-primary" aria-label="Admin" />
             ) : null}
@@ -172,7 +182,7 @@ function UserRow({ user }: { user: AdminUser }) {
             type="button"
             onClick={() => run(() => unbanUser(user.id))}
             disabled={pending}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-bold uppercase tracking-wider text-foreground transition-colors hover:border-primary disabled:opacity-50"
+            className="relative z-10 flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-bold uppercase tracking-wider text-foreground transition-colors hover:border-primary disabled:opacity-50"
           >
             <Undo2 className="size-3.5" aria-hidden="true" />
             {pending ? "Unbanning" : "Unban"}
@@ -181,7 +191,7 @@ function UserRow({ user }: { user: AdminUser }) {
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-2 text-xs font-bold uppercase tracking-wider text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground"
+            className="relative z-10 flex shrink-0 items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-2 text-xs font-bold uppercase tracking-wider text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground"
           >
             <Ban className="size-3.5" aria-hidden="true" />
             Ban
