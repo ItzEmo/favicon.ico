@@ -15,7 +15,7 @@ import {
 import { PageHeader } from "@/components/page-header"
 import { SignOutButton } from "@/components/sign-out-button"
 import { auth } from "@/lib/auth"
-import { getTotalSubmissions, getUserSubmissions, statusLabel } from "@/lib/account"
+import { getUserStats, getUserSubmissions, statusLabel } from "@/lib/account"
 
 export const metadata: Metadata = {
   title: "Account",
@@ -49,14 +49,26 @@ export default async function AccountPage() {
     year: "numeric",
   })
 
-  const [totalSubmissions, submissions] = await Promise.all([
-    getTotalSubmissions(),
+  const [accountStats, submissions] = await Promise.all([
+    getUserStats(user.id),
     getUserSubmissions(user.id),
   ])
   const stats = [
-    { icon: UploadCloud, label: "Submissions", value: totalSubmissions.toLocaleString("en-US") },
-    { icon: Star, label: "Avg Score", value: "8.3" },
-    { icon: Trophy, label: "Season Rank", value: "#5" },
+    {
+      icon: UploadCloud,
+      label: "Submissions",
+      value: accountStats.submissions.toLocaleString("en-US"),
+    },
+    {
+      icon: Star,
+      label: "Avg Score",
+      value: accountStats.avgScore != null ? accountStats.avgScore.toFixed(1) : "—",
+    },
+    {
+      icon: Trophy,
+      label: "Rank",
+      value: accountStats.rank != null ? `#${accountStats.rank}` : "Unranked",
+    },
   ]
 
   return (

@@ -35,6 +35,49 @@ export async function getTotalSubmissions(): Promise<number> {
   return rows[0]?.total ?? 0
 }
 
+export interface AccountStats {
+  submissions: number
+  avgScore: number | null
+  rank: number | null
+  rankedAccounts: number
+}
+
+// Rank uses the same points formula as the public leaderboard (sum of scores x 10),
+// but is scored per account so two artists sharing a name never share a rank.
+export async function getUserStats(userId: string): Promise<AccountStats> {
+  const rows = (await sql`
+    WITH account_points AS (
+      SELECT s.user_id,
+             sum(r.score) * 10 AS points,
+             avg(r.score)::float AS avg
+      FROM submissions s
+      JOIN track_ratings r ON r.track_id = s.track_id
+      WHERE s.user_id IS NOT NULL AND s.status <> 'pending'
+      GROUP BY s.user_id
+    ),
+    ranked AS (
+      SELECT user_id, avg,
+             rank() OVER (ORDER BY points DESC, avg DESC)::int AS rank,
+             count(*) OVER ()::int AS total
+      FROM account_points
+    )
+    SELECT
+      (SELECT count(*)::int FROM submissions
+        WHERE user_id = ${userId} AND status <> 'pending') AS submissions,
+      (SELECT avg FROM ranked WHERE user_id = ${userId}) AS avg_score,
+      (SELECT rank FROM ranked WHERE user_id = ${userId}) AS rank,
+      (SELECT count(*)::int FROM account_points) AS ranked_accounts
+  `) as { submissions: number; avg_score: number | null; rank: number | null; ranked_accounts: number }[]
+
+  const row = rows[0]
+  return {
+    submissions: row?.submissions ?? 0,
+    avgScore: row?.avg_score ?? null,
+    rank: row?.rank ?? null,
+    rankedAccounts: row?.ranked_accounts ?? 0,
+  }
+}
+
 export async function getUserSubmissions(userId: string): Promise<AccountSubmission[]> {
   const rows = (await sql`
     SELECT s.track_id, s.title, s.status, s.line, s.created_at,
