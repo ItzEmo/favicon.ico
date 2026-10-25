@@ -58,10 +58,11 @@ export default async function LinkPage({ params }: Props) {
       ? link.backgroundImage
       : LINK_BACKGROUNDS[link.background === "custom" ? "rain" : link.background].src
   const statItems = [
-    { label: "Submitted", value: stats.submissions.toString() },
-    { label: "Avg Score", value: stats.avgScore != null ? stats.avgScore.toFixed(1) : "—" },
-    { label: "Rank", value: stats.rank != null ? `#${stats.rank}` : "—" },
-  ]
+    { label: "Submitted", value: stats.submissions.toString(), hidden: link.hideSubmissions },
+    { label: "Avg Score", value: stats.avgScore != null ? stats.avgScore.toFixed(1) : "—", hidden: link.hideAvgScore },
+    { label: "Rank", value: stats.rank != null ? `#${stats.rank}` : "—", hidden: link.hideRank },
+  ].filter((s) => !s.hidden)
+  const statCols = ["", "grid-cols-1", "grid-cols-2", "grid-cols-3"][statItems.length]
 
   return (
     <div
@@ -107,14 +108,16 @@ export default async function LinkPage({ params }: Props) {
             )}
           </header>
 
-          <dl className={`grid w-full grid-cols-3 divide-x divide-foreground/10 py-3 ${glass} hover:border-foreground/15 hover:bg-background/45`}>
-            {statItems.map((s) => (
-              <div key={s.label} className="flex flex-col items-center gap-0.5">
-                <dt className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/60">{s.label}</dt>
-                <dd className="text-lg font-extrabold text-foreground">{s.value}</dd>
-              </div>
-            ))}
-          </dl>
+          {statItems.length > 0 && (
+            <dl className={`grid w-full ${statCols} divide-x divide-foreground/10 py-3 ${glass} hover:border-foreground/15 hover:bg-background/45`}>
+              {statItems.map((s) => (
+                <div key={s.label} className="flex flex-col items-center gap-0.5">
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/60">{s.label}</dt>
+                  <dd className="text-lg font-extrabold text-foreground">{s.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
 
           <nav aria-label={`${page.name}'s links`} className="flex w-full flex-col gap-3">
             {page.instagram && (
@@ -130,6 +133,22 @@ export default async function LinkPage({ params }: Props) {
                 <span className="sr-only">(opens in a new tab)</span>
               </a>
             )}
+
+            {link.customLinks.map((item, index) => (
+              <a
+                key={`${item.url}-${index}`}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group flex h-14 items-center gap-3 px-5 ${glass}`}
+              >
+                <span className="flex-1 truncate text-center font-semibold text-foreground group-hover:text-primary">
+                  {item.title}
+                </span>
+                <ArrowUpRight className="size-4 shrink-0 text-foreground/60 group-hover:text-primary" aria-hidden="true" />
+                <span className="sr-only">(opens in a new tab)</span>
+              </a>
+            ))}
 
             {page.musicLinks.map((item) => {
               const embed = spotifyEmbed(item.url) ?? appleMusicEmbed(item.url)
@@ -162,7 +181,7 @@ export default async function LinkPage({ params }: Props) {
               )
             })}
 
-            {!page.instagram && page.musicLinks.length === 0 && (
+            {!page.instagram && page.musicLinks.length === 0 && link.customLinks.length === 0 && (
               <p className={`px-6 py-8 text-center text-sm text-foreground/70 ${glass}`}>
                 {page.name} hasn&apos;t added any links yet.
               </p>

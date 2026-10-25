@@ -11,6 +11,8 @@ import {
   isPresetBackground,
   linkPath,
   normalizeHandle,
+  parseCustomLinks,
+  type CustomLink,
 } from "@/lib/link-page"
 
 export interface LinkPageState {
@@ -49,12 +51,28 @@ export async function updateLinkPage(
   if (!isLinkAccent(accent)) return { ok: false, message: "Pick an accent color" }
 
   const rain = formData.get("rain") === "on"
+  const hideSubmissions = formData.get("hideSubmissions") === "on"
+  const hideAvg = formData.get("hideAvgScore") === "on"
+  const hideRank = formData.get("hideRank") === "on"
+
+  let customLinks: CustomLink[]
+  try {
+    customLinks = parseCustomLinks(
+      formData.getAll("linkTitle").map(String),
+      formData.getAll("linkUrl").map(String),
+    )
+  } catch (error) {
+    return { ok: false, message: (error as Error).message }
+  }
 
   try {
     await sql`
       UPDATE "user"
       SET handle = ${handle}, link_bio = ${bio || null}, link_theme = ${background},
-          link_accent = ${accent}, link_rain = ${rain}, "updatedAt" = now()
+          link_accent = ${accent}, link_rain = ${rain},
+          link_custom_links = ${JSON.stringify(customLinks)}::jsonb,
+          link_hide_submissions = ${hideSubmissions}, link_hide_avg = ${hideAvg},
+          link_hide_rank = ${hideRank}, "updatedAt" = now()
       WHERE id = ${session.user.id}
     `
   } catch (error) {

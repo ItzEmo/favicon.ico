@@ -19,6 +19,47 @@ export const LINK_ACCENTS = {
 export type LinkAccent = keyof typeof LINK_ACCENTS
 
 export const MAX_BIO_LENGTH = 160
+export const MAX_CUSTOM_LINKS = 7
+export const MAX_LINK_TITLE_LENGTH = 60
+
+export interface CustomLink {
+  title: string
+  url: string
+}
+
+/** Cleans submitted rows, dropping fully empty ones. Throws a readable error on bad input. */
+export function parseCustomLinks(titles: string[], urls: string[]): CustomLink[] {
+  const links: CustomLink[] = []
+  const count = Math.max(titles.length, urls.length)
+  for (let i = 0; i < count; i++) {
+    const title = String(titles[i] ?? "").trim()
+    let raw = String(urls[i] ?? "").trim()
+    if (!title && !raw) continue
+    if (!raw) throw new Error(`Add a URL for "${title}"`)
+    if (raw.length > 500) throw new Error("One of your links is too long")
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(raw)) raw = `https://${raw}`
+    let url: URL
+    try {
+      url = new URL(raw)
+    } catch {
+      throw new Error(`"${raw}" isn't a valid link`)
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("Links must be web addresses")
+    if (title.length > MAX_LINK_TITLE_LENGTH) {
+      throw new Error(`Link titles must be ${MAX_LINK_TITLE_LENGTH} characters or fewer`)
+    }
+    links.push({ title: title || url.hostname.replace(/^www\./, ""), url: url.toString() })
+  }
+  if (links.length > MAX_CUSTOM_LINKS) throw new Error(`You can add up to ${MAX_CUSTOM_LINKS} links`)
+  return links
+}
+
+export function coerceCustomLinks(value: unknown): CustomLink[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((l): l is CustomLink => !!l && typeof l.title === "string" && typeof l.url === "string")
+    .slice(0, MAX_CUSTOM_LINKS)
+}
 
 export function isPresetBackground(value: string): value is PresetBackground {
   return value in LINK_BACKGROUNDS
