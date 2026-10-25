@@ -2,6 +2,7 @@ import type { CSSProperties } from "react"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { Modak } from "next/font/google"
 import { ArrowUpRight } from "lucide-react"
 import { getLinkPage } from "@/lib/account"
 import { LINK_ACCENTS, LINK_BACKGROUNDS } from "@/lib/link-page"
@@ -9,6 +10,9 @@ import { musicLinkLabel } from "@/lib/music-links"
 import { appleMusicEmbed, spotifyEmbed } from "@/lib/artist-links-types"
 import { RainBackdrop } from "@/components/rain-backdrop"
 import { ShareLinkButton } from "@/components/share-link-button"
+
+// Closest web font to the bubble lettering in the Emo's Radio logo.
+const bubbleFont = Modak({ weight: "400", subsets: ["latin"] })
 
 export const dynamic = "force-dynamic"
 
@@ -85,20 +89,30 @@ export default async function LinkPage({ params }: Props) {
           <ShareLinkButton title={`${page.name} on Emo's Radio`} className="absolute top-4 right-4" />
 
           <header className="flex flex-col items-center gap-4 text-center">
-            <div className="size-28 overflow-hidden rounded-full ring-2 ring-primary ring-offset-4 ring-offset-transparent shadow-[0_0_40px_var(--primary)]">
-              {page.image ? (
-                // eslint-disable-next-line @next/next/no-img-element -- avatar hosts vary
-                <img src={page.image} alt="" referrerPolicy="no-referrer" className="size-full object-cover" />
-              ) : (
-                <span className="flex size-full items-center justify-center bg-primary text-4xl font-extrabold text-primary-foreground">
-                  {initialsOf(page.name)}
-                </span>
-              )}
-            </div>
+            {link.headerStyle === "avatar" && (
+              <div className="size-28 overflow-hidden rounded-full ring-2 ring-primary ring-offset-4 ring-offset-transparent shadow-[0_0_40px_var(--primary)]">
+                {page.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- avatar hosts vary
+                  <img src={page.image} alt="" referrerPolicy="no-referrer" className="size-full object-cover" />
+                ) : (
+                  <span className="flex size-full items-center justify-center bg-primary text-4xl font-extrabold text-primary-foreground">
+                    {initialsOf(page.name)}
+                  </span>
+                )}
+              </div>
+            )}
             <div className="flex flex-col gap-1">
-              <h1 className="text-balance text-4xl font-extrabold tracking-tight text-foreground [text-shadow:0_2px_16px_var(--background)]">
-                {page.name}
-              </h1>
+              {link.headerStyle === "name" ? (
+                <h1
+                  className={`${bubbleFont.className} max-w-full text-balance break-words text-7xl leading-[0.85] text-foreground/90 uppercase sm:text-8xl [-webkit-text-stroke:2px_var(--foreground)] [text-shadow:0_0_2px_var(--foreground),0_4px_24px_var(--primary),0_2px_16px_var(--background)]`}
+                >
+                  {page.name}
+                </h1>
+              ) : (
+                <h1 className="text-balance text-4xl font-extrabold tracking-tight text-foreground [text-shadow:0_2px_16px_var(--background)]">
+                  {page.name}
+                </h1>
+              )}
               <p className="text-sm font-semibold text-primary [text-shadow:0_1px_8px_var(--background)]">@{link.handle}</p>
             </div>
             {link.bio && (

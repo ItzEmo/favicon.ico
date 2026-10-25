@@ -7,6 +7,7 @@ import { updateLinkPage, type LinkPageState } from "@/app/actions/link-page"
 import {
   LINK_ACCENTS,
   LINK_BACKGROUNDS,
+  LINK_HEADER_STYLES,
   MAX_BIO_LENGTH,
   MAX_CUSTOM_LINKS,
   MAX_LINK_TITLE_LENGTH,
@@ -16,6 +17,23 @@ import {
 } from "@/lib/link-page"
 import type { LinkSettings } from "@/lib/account"
 import { cn } from "@/lib/utils"
+
+function RoundCheckbox({ type = "checkbox", ...props }: React.ComponentProps<"input">) {
+  return (
+    <span className="relative inline-flex size-5 shrink-0">
+      <input
+        type={type}
+        {...props}
+        className="peer size-5 cursor-pointer appearance-none rounded-full border border-foreground/25 bg-foreground/5 transition-colors checked:border-primary checked:bg-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      />
+      <Check
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 m-auto size-3 text-primary opacity-0 transition-opacity peer-checked:opacity-100"
+        strokeWidth={3}
+      />
+    </span>
+  )
+}
 
 const tile =
   "relative flex aspect-[3/4] cursor-pointer items-end overflow-hidden rounded-xl border-2 border-transparent bg-muted text-left has-[:checked]:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary"
@@ -206,6 +224,24 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
         </fieldset>
 
         <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-sm font-semibold text-foreground">Page header</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {Object.entries(LINK_HEADER_STYLES).map(([key, style]) => (
+              <label
+                key={key}
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 has-[:checked]:border-primary"
+              >
+                <span className="flex flex-col">
+                  <span className="text-sm font-semibold text-foreground">{style.label}</span>
+                  <span className="text-xs text-muted-foreground">{style.description}</span>
+                </span>
+                <RoundCheckbox type="radio" name="headerStyle" value={key} defaultChecked={settings.headerStyle === key} />
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-sm font-semibold text-foreground">Stats shown on your page</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {[
@@ -218,7 +254,7 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
                 className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 text-sm font-semibold text-foreground"
               >
                 {opt.label}
-                <input type="checkbox" name={opt.name} defaultChecked={opt.checked} className="size-5 accent-primary" />
+                <RoundCheckbox name={opt.name} defaultChecked={opt.checked} />
               </label>
             ))}
           </div>
@@ -313,7 +349,7 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
             <span className="text-sm font-semibold text-foreground">Rain effect</span>
             <span className="text-xs text-muted-foreground">Falling rain over your background, like the unlock screen.</span>
           </span>
-          <input type="checkbox" name="rain" defaultChecked={settings.rain} className="size-5 accent-primary" />
+          <RoundCheckbox name="rain" defaultChecked={settings.rain} />
         </label>
 
         <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
