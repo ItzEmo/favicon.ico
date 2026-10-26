@@ -1,5 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
+import { getArtistLinks } from "@/lib/artist-links"
+import type { SocialLinkKind } from "@/lib/artist-links-types"
 
 const COLUMNS = [
   {
@@ -22,18 +24,32 @@ const COLUMNS = [
       { label: "Membership", href: "/account" },
     ],
   },
-  {
-    title: "CONNECT",
-    links: [
-      { label: "TikTok", href: "https://www.tiktok.com/@_itzemo1" },
-      { label: "Instagram", href: "https://instagram.com" },
-      { label: "YouTube", href: "https://youtube.com" },
-      { label: "Twitch", href: "https://twitch.tv" },
-    ],
-  },
 ]
 
-export function SiteFooter() {
+const SOCIALS: { label: string; kind: SocialLinkKind }[] = [
+  { label: "TikTok", kind: "tiktok" },
+  { label: "Instagram", kind: "instagram" },
+  { label: "YouTube", kind: "youtube" },
+]
+
+async function loadSocialLinks() {
+  try {
+    const links = await getArtistLinks()
+    return SOCIALS.flatMap(({ label, kind }) =>
+      links[kind] ? [{ label, href: links[kind] as string, external: true }] : [],
+    )
+  } catch {
+    return []
+  }
+}
+
+export async function SiteFooter() {
+  const socialLinks = await loadSocialLinks()
+  const columns: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
+    ...COLUMNS,
+    ...(socialLinks.length ? [{ title: "CONNECT", links: socialLinks }] : []),
+  ]
+
   return (
     <footer className="border-t border-border/60 bg-card/30">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
@@ -57,7 +73,7 @@ export function SiteFooter() {
           </span>
         </div>
 
-        {COLUMNS.map((col) => (
+        {columns.map((col) => (
           <div key={col.title} className="flex flex-col gap-3">
             <p className="text-xs font-bold uppercase tracking-widest text-primary">
               {col.title}
@@ -67,6 +83,7 @@ export function SiteFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
+                    {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
