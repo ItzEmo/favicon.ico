@@ -12,6 +12,7 @@ import { appleMusicEmbed, spotifyEmbed } from "@/lib/artist-links-types"
 import { GlassFilterDefs } from "@/components/glass-filter-defs"
 import { LinkEffectBackdrop } from "@/components/link-effect-backdrop"
 import { ShareLinkButton } from "@/components/share-link-button"
+import { LinkSongPlayer } from "@/components/link-song-player"
 
 // Closest web font to the bubble lettering in the Emo's Radio logo.
 const bubbleFont = Modak({ weight: "400", subsets: ["latin"] })
@@ -90,6 +91,7 @@ export default async function LinkPage({ params }: Props) {
         className={`relative h-full overflow-y-auto overscroll-contain${link.effect === "storm" ? " link-page--storm" : ""}`}
       >
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center gap-7 px-5 pt-14 pb-10 sm:pt-20">
+          {link.songUrl && <LinkSongPlayer src={link.songUrl} title={link.songTitle ?? "Now playing"} />}
           <ShareLinkButton title={`${page.name} on Emo's Radio`} className="absolute top-4 right-4" />
 
           <header className="flex flex-col items-center gap-4 text-center">

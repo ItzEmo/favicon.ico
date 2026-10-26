@@ -181,9 +181,13 @@ export interface LinkSettings {
   hideAvgScore: boolean
   hideRank: boolean
   headerStyle: LinkHeaderStyle
+  songUrl: string | null
+  songTitle: string | null
 }
 
 interface LinkRow {
+  link_song_url: string | null
+  link_song_title: string | null
   link_header: string
   handle: string
   link_bio: string | null
@@ -220,13 +224,16 @@ function toLinkSettings(row: LinkRow): LinkSettings {
       : isLinkHeaderStyle(row.link_header)
         ? "name"
         : "avatar",
+    songUrl: row.link_song_url,
+    songTitle: row.link_song_title,
   }
 }
 
 export async function getLinkSettings(userId: string): Promise<LinkSettings | null> {
   const rows = (await sql`
     SELECT handle, link_bio, link_theme, link_accent, link_effect, link_bg_image,
-           link_custom_links, link_hide_submissions, link_hide_avg, link_hide_rank, link_header
+           link_custom_links, link_hide_submissions, link_hide_avg, link_hide_rank, link_header,
+           link_song_url, link_song_title
     FROM "user" WHERE id = ${userId} LIMIT 1
   `) as LinkRow[]
   return rows[0] ? toLinkSettings(rows[0]) : null
