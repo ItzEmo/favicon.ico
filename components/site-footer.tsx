@@ -12,6 +12,7 @@ const COLUMNS = [
       { label: "The Vault", href: "/vault" },
       { label: "Arena", href: "/arena" },
       { label: "Tools", href: "/tools" },
+      { label: "Mix & Mastering", href: "/mix-master" },
       { label: "Account", href: "/account" },
     ],
   },

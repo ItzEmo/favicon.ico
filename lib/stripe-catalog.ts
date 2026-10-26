@@ -8,7 +8,14 @@ import { BOOST_PRICE_IN_CENTS, LINES, type LineId } from "@/lib/lines"
 // the first checkout in a fresh Stripe account creates the catalog, and later
 // checkouts reuse it. If an amount in lib/lines.ts changes, a new Price is
 // created and the lookup_key moves to it automatically.
-export type CatalogKey = "line_skipplus" | "line_skip" | "line_boost" | "queue_boost"
+export type CatalogKey =
+  | "line_skipplus"
+  | "line_skip"
+  | "line_boost"
+  | "queue_boost"
+  | "mix_master"
+
+export const MIX_MASTER_PRICE_IN_CENTS = 3000
 
 interface CatalogEntry {
   productName: string
@@ -36,6 +43,11 @@ const CATALOG: Record<CatalogKey, CatalogEntry> = {
     productName: "Queue Boost (Add-on)",
     description: "Bumps a track already in the queue to the top of its current line.",
     amount: BOOST_PRICE_IN_CENTS,
+  },
+  mix_master: {
+    productName: "Mix & Mastering",
+    description: "An exclusive Mix & Master by ItzEmo himself.",
+    amount: MIX_MASTER_PRICE_IN_CENTS,
   },
 }
 
