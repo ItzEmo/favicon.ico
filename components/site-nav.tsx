@@ -15,7 +15,6 @@ export const NAV_ITEMS = [
   { label: "SUBMIT", href: "/submit" },
   { label: "VAULT", href: "/vault" },
   { label: "TOOLS", href: "/tools" },
-  { label: "MIX & MASTER", href: "/mix-master" },
   { label: "BLOG", href: "/blog" },
   { label: "ARENA", href: "/arena" },
   { label: "RANKS", href: "/ranks" },

@@ -41,6 +41,14 @@ export function AdminMixOrders({ orders }: { orders: MixOrder[] }) {
               <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
               Open files
             </a>
+            {order.referenceUrl && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reference track</span>
+                <audio controls preload="none" src={order.referenceUrl} className="w-full max-w-md">
+                  <a href={order.referenceUrl}>Download reference</a>
+                </audio>
+              </div>
+            )}
             {order.notes && <p className="text-sm leading-relaxed text-muted-foreground">{order.notes}</p>}
             <button
               type="button"
