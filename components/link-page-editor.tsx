@@ -2,7 +2,7 @@
 
 import { useActionState, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Check, ChevronDown, Copy, ExternalLink, Eye, EyeOff, ImagePlus, Link2, Loader2, Plus, Trash2 } from "lucide-react"
+import { Check, ChevronDown, Copy, ExternalLink, Eye, EyeOff, ImagePlus, Link2, Loader2, Music2, Plus, Trash2, Upload } from "lucide-react"
 import { updateLinkPage, type LinkPageState } from "@/app/actions/link-page"
 import {
   LINK_ACCENTS,
@@ -62,6 +62,37 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
   const [links, setLinks] = useState(() => settings.customLinks.map((l, i) => ({ ...l, id: `link-${i}` })))
   const nextLinkId = useRef(settings.customLinks.length)
   const fileRef = useRef<HTMLInputElement>(null)
+  const songRef = useRef<HTMLInputElement>(null)
+  const [song, setSong] = useState(
+    settings.songUrl ? { url: settings.songUrl, title: settings.songTitle ?? "My song" } : null,
+  )
+  const [songBusy, setSongBusy] = useState(false)
+  const [songError, setSongError] = useState<string | null>(null)
+
+  async function songRequest(init: RequestInit) {
+    setSongError(null)
+    setSongBusy(true)
+    try {
+      const res = await fetch("/api/account/link-song", init)
+      const data = (await res.json()) as { url?: string; title?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? "Something went wrong")
+      setSong(data.url ? { url: data.url, title: data.title ?? "My song" } : null)
+      router.refresh()
+    } catch (error) {
+      setSongError((error as Error).message)
+    } finally {
+      setSongBusy(false)
+    }
+  }
+
+  function onPickSong(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    const body = new FormData()
+    body.append("file", file)
+    void songRequest({ method: "POST", body })
+  }
 
   const fullUrl = `${origin}${linkPath(settings.handle)}`
 
@@ -301,6 +332,58 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
             {hideStats ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
             {hideStats ? "Stats hidden" : "Stats shown"}
           </button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-semibold text-foreground">Page song</span>
+          <div className="flex flex-col gap-3 rounded-xl border border-border bg-background/60 p-3 sm:flex-row sm:items-center">
+            <span className="flex min-w-0 flex-1 items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <Music2 className="size-5" aria-hidden="true" />
+              </span>
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-semibold text-foreground">{song ? song.title : "No song yet"}</span>
+                <span className="text-xs text-muted-foreground">
+                  {song ? "Plays automatically on your page." : "Add a track that plays when people visit."}
+                </span>
+              </span>
+            </span>
+            {song && (
+              // eslint-disable-next-line jsx-a11y/media-has-caption -- music preview
+              <audio src={song.url} controls preload="none" className="h-9 w-full sm:w-48" />
+            )}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => songRef.current?.click()}
+                disabled={songBusy}
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                {songBusy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Upload className="size-4" aria-hidden="true" />}
+                {song ? "Replace" : "Upload song"}
+              </button>
+              {song && (
+                <button
+                  type="button"
+                  onClick={() => void songRequest({ method: "DELETE" })}
+                  disabled={songBusy}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-sm text-muted-foreground transition-colors hover:border-destructive hover:text-destructive disabled:opacity-60"
+                >
+                  <Trash2 className="size-4" aria-hidden="true" />
+                  <span className="sr-only">Remove song</span>
+                </button>
+              )}
+            </div>
+          </div>
+          <input ref={songRef} type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,audio/wav,audio/x-wav,audio/ogg,.mp3,.m4a,.wav,.ogg" onChange={onPickSong} className="sr-only" tabIndex={-1} aria-hidden="true" />
+          <p className="text-xs text-muted-foreground">
+            MP3, M4A, WAV or OGG up to 15 MB. It loops; browsers may wait for the visitor&apos;s first tap before playing sound.
+          </p>
+          {songError && (
+            <p role="alert" className="text-sm text-destructive">
+              {songError}
+            </p>
+          )}
         </div>
 
         <fieldset className="flex flex-col gap-3">
