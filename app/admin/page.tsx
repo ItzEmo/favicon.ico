@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound, SlidersHorizontal } from "lucide-react"
+import { AdminMixOrders } from "@/components/admin-mix-orders"
+import { getPaidMixOrders } from "@/lib/mix-master"
 import { AdminUsers } from "@/components/admin-users"
 import { AdminGuests } from "@/components/admin-guests"
 import { getAllUsers, getGuestSubmitters } from "@/lib/users"
@@ -29,6 +31,7 @@ export const metadata = {
 const SECTIONS = [
   { id: "player", label: "Player", icon: Headphones },
   { id: "queue", label: "Queue", icon: ListMusic },
+  { id: "mix-orders", label: "Mix Orders", icon: SlidersHorizontal },
   { id: "accounts", label: "Accounts", icon: Users },
   { id: "guests", label: "Guests", icon: UserRound },
   { id: "history", label: "History", icon: History },
@@ -52,7 +55,7 @@ function SectionHeading({ icon: Icon, title, note }: { icon: typeof Swords; titl
 
 export default async function AdminPage() {
   if (!(await isAdmin())) notFound()
-  const [battles, posts, vaultEntries, musicLinks, queueStatus, users, guests] = await Promise.all([
+  const [battles, posts, vaultEntries, musicLinks, queueStatus, users, guests, mixOrders] = await Promise.all([
     getBattles(),
     getPosts(),
     getVaultEntries(),
@@ -60,6 +63,7 @@ export default async function AdminPage() {
     getQueueStatus(),
     getAllUsers(),
     getGuestSubmitters(),
+    getPaidMixOrders(),
   ])
   const archivedTrackIds = vaultEntries.flatMap((e) => (e.trackId ? [e.trackId] : []))
 
@@ -107,6 +111,15 @@ export default async function AdminPage() {
           <AdminQueueSwitches status={queueStatus} />
           <AdminClearQueue />
           <AdminQueue archivedTrackIds={archivedTrackIds} />
+        </section>
+
+        <section id="mix-orders" className="scroll-mt-36">
+          <SectionHeading
+            icon={SlidersHorizontal}
+            title="Mix & Mastering Orders"
+            note="Paid $30 orders. Open the files, then mark each one delivered when you send it back."
+          />
+          <AdminMixOrders orders={mixOrders} />
         </section>
 
         <section id="accounts" className="scroll-mt-36">

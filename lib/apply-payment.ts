@@ -26,6 +26,31 @@ export async function applyPaidSession(session: Stripe.Checkout.Session): Promis
   if (session.payment_status !== "paid") return false
 
   const metadata = session.metadata ?? {}
+
+  if (metadata.action === "mix_master") {
+    const orderId = metadata.orderId
+    if (
+      !orderId ||
+      session.amount_total !== catalogAmount("mix_master") ||
+      session.currency !== "usd"
+    ) {
+      return false
+    }
+    await sql`
+      WITH claim AS (
+        INSERT INTO processed_payments (session_id, track_id, action)
+        VALUES (${session.id}, ${orderId}, 'mix_master')
+        ON CONFLICT (session_id) DO NOTHING
+        RETURNING 1
+      )
+      UPDATE mix_master_orders
+      SET status = 'paid', paid_at = now(), session_id = ${session.id}
+      WHERE id = ${orderId} AND status = 'pending'
+        AND EXISTS (SELECT 1 FROM claim)
+    `
+    return true
+  }
+
   const trackId = metadata.trackId
   const action = metadata.action
   const line = metadata.line
