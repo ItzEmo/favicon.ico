@@ -65,6 +65,7 @@ export function MixMasterForm({ defaultName, defaultEmail }: { defaultName: stri
         trackUrl: String(data.get("trackUrl") ?? ""),
         notes: String(data.get("notes") ?? ""),
         referencePath: referencePath ?? undefined,
+        referenceUrl: String(data.get("referenceUrl") ?? ""),
       })
       setCheckout({ ...session, title: "Mix & Mastering — $30" })
     } catch (err) {
@@ -107,6 +108,18 @@ export function MixMasterForm({ defaultName, defaultEmail }: { defaultName: stri
             required
             maxLength={500}
             placeholder="Google Drive, Dropbox, WeTransfer..."
+            className={inputClass}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+          <span>
+            Link to reference song <span className="font-normal text-muted-foreground">(optional)</span>
+          </span>
+          <input
+            name="referenceUrl"
+            type="url"
+            maxLength={500}
+            placeholder="Spotify, YouTube, Apple Music, SoundCloud..."
             className={inputClass}
           />
         </label>

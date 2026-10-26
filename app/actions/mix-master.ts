@@ -16,6 +16,7 @@ export interface MixOrderInput {
   trackUrl: string
   notes: string
   referencePath?: string
+  referenceUrl?: string
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -40,7 +41,19 @@ function sanitize(input: MixOrderInput): MixOrderInput {
   if (notes.length > 1000) throw new Error("Notes must be under 1000 characters.")
   const referencePath = String(input.referencePath ?? "").trim()
   if (referencePath && !isReferencePath(referencePath)) throw new Error("Reference upload not found.")
-  return { name, email, trackUrl, notes, referencePath }
+  const referenceUrl = String(input.referenceUrl ?? "").trim()
+  if (referenceUrl) {
+    let ref: URL
+    try {
+      ref = new URL(referenceUrl)
+    } catch {
+      throw new Error("Enter a valid link to your reference song.")
+    }
+    if (!/^https?:$/.test(ref.protocol) || referenceUrl.length > 500) {
+      throw new Error("Enter a valid link to your reference song.")
+    }
+  }
+  return { name, email, trackUrl, notes, referencePath, referenceUrl }
 }
 
 async function verifyReference(pathname: string) {
@@ -61,9 +74,10 @@ export async function createMixMasterCheckout(raw: MixOrderInput) {
   const referencePath = await verifyReference(input.referencePath ?? "")
 
   await sql`
-    INSERT INTO mix_master_orders (id, user_id, name, email, track_url, notes, amount_cents, reference_path)
+    INSERT INTO mix_master_orders (id, user_id, name, email, track_url, notes, amount_cents, reference_path, reference_url)
     VALUES (${orderId}, ${session?.user.id ?? null}, ${input.name}, ${input.email},
-            ${input.trackUrl}, ${input.notes}, ${MIX_MASTER_PRICE_IN_CENTS}, ${referencePath})
+            ${input.trackUrl}, ${input.notes}, ${MIX_MASTER_PRICE_IN_CENTS}, ${referencePath},
+            ${input.referenceUrl || null})
   `
 
   const price = await getCatalogPriceId("mix_master")
