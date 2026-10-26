@@ -8,6 +8,9 @@ import { ProfileForm } from "@/components/profile-form"
 import { auth } from "@/lib/auth"
 import { getLinkSettings, getProfileExtras } from "@/lib/account"
 import { LinkPageEditor } from "@/components/link-page-editor"
+import { UnlockBackgroundEditor } from "@/components/unlock-background-editor"
+import { isAdmin } from "@/lib/admin-auth"
+import { DEFAULT_UNLOCK_BG, getUnlockBackground } from "@/lib/site-settings"
 
 export const metadata: Metadata = {
   title: "Edit Profile",
@@ -19,11 +22,13 @@ export default async function ProfilePage() {
   if (!session?.user) redirect("/sign-in")
 
   const { user } = session
-  const [{ instagram, musicLinks }, linkSettings, requestHeaders] = await Promise.all([
+  const [{ instagram, musicLinks }, linkSettings, requestHeaders, admin] = await Promise.all([
     getProfileExtras(user.id),
     getLinkSettings(user.id),
     headers(),
+    isAdmin(),
   ])
+  const unlockBg = admin ? await getUnlockBackground().catch(() => null) : null
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000"
   const proto = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")
   const origin = `${proto}://${host}`
@@ -52,7 +57,8 @@ export default async function ProfilePage() {
           instagram={instagram}
           musicLinks={musicLinks}
         />
-        {linkSettings && <LinkPageEditor settings={linkSettings} origin={origin} />}
+        {admin && <UnlockBackgroundEditor current={unlockBg} fallback={DEFAULT_UNLOCK_BG} />}
+        {linkSettings && <LinkPageEditor settings={linkSettings} origin={origin} userId={user.id} />}
       </section>
     </>
   )

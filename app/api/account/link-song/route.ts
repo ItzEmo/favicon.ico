@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { del, get, put } from "@vercel/blob"
+import { del, get, head } from "@vercel/blob"
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 import { sql } from "@/lib/db"
 import { getLinkSettings } from "@/lib/account"
 import { linkPath } from "@/lib/link-page"
 
-const MAX_SONG_BYTES = 15 * 1024 * 1024
+const MAX_SONG_BYTES = 50 * 1024 * 1024
 const TYPES: Record<string, string> = {
   "audio/mpeg": "mp3",
   "audio/mp3": "mp3",
@@ -17,6 +18,7 @@ const TYPES: Record<string, string> = {
   "audio/x-wav": "wav",
   "audio/ogg": "ogg",
 }
+const EXTENSIONS = ["mp3", "m4a", "aac", "wav", "ogg"]
 const SONG_PREFIX = "/api/account/link-song?p="
 
 function isSongPath(pathname: string) {
@@ -51,34 +53,104 @@ export async function GET(request: NextRequest) {
   return new NextResponse(result.stream, { status, headers })
 }
 
+function titleFrom(name: string) {
+  return (
+    decodeURIComponent(name)
+      .replace(/\.[^.]+$/, "")
+      .replace(/[_-]+/g, " ")
+      .trim()
+      .slice(0, 80) || "My song"
+  )
+}
+
+// Share links from Dropbox and Google Drive point at a preview page, not the audio file itself.
+function toDirectAudioUrl(raw: string): URL | null {
+  let url: URL
+  try {
+    url = new URL(raw.trim())
+  } catch {
+    return null
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null
+  if (url.hostname.endsWith("dropbox.com")) {
+    url.searchParams.delete("dl")
+    url.searchParams.set("raw", "1")
+  }
+  const driveId = url.hostname === "drive.google.com" ? url.pathname.match(/\/file\/d\/([\w-]+)/)?.[1] : null
+  if (driveId) return new URL(`https://drive.google.com/uc?export=download&id=${driveId}`)
+  return url
+}
+
+async function saveSong(userId: string, url: string, title: string) {
+  const current = await getLinkSettings(userId)
+  await sql`
+    UPDATE "user" SET link_song_url = ${url}, link_song_title = ${title}, "updatedAt" = now()
+    WHERE id = ${userId}
+  `
+  if (current?.songUrl !== url) await deleteSong(current?.songUrl)
+  if (current) revalidatePath(linkPath(current.handle))
+  return NextResponse.json({ url, title })
+}
+
+// Files upload straight from the browser to Blob, so the 50 MB limit is not capped by the function body size.
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })
   if (!session?.user) return NextResponse.json({ error: "Please sign in" }, { status: 401 })
+  const userId = session.user.id
+  const ownPrefix = `link-song/${userId}/`
 
-  const form = await request.formData()
-  const file = form.get("file")
-  if (!(file instanceof File)) return NextResponse.json({ error: "Choose a song file" }, { status: 400 })
-  const ext = TYPES[file.type]
-  if (!ext) return NextResponse.json({ error: "Use an MP3, M4A, WAV or OGG file" }, { status: 400 })
-  if (file.size > MAX_SONG_BYTES) return NextResponse.json({ error: "Song must be under 15 MB" }, { status: 400 })
+  const body = (await request.json().catch(() => null)) as
+    | (HandleUploadBody & { pathname?: never; link?: never })
+    | { pathname?: string; link?: string; title?: string }
+    | null
+  if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-  const title = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 80) || "My song"
-  const current = await getLinkSettings(session.user.id)
-  const blob = await put(`link-song/${session.user.id}.${ext}`, file, {
-    access: "private",
-    addRandomSuffix: true,
-    contentType: file.type,
-  })
-  const url = `${SONG_PREFIX}${encodeURIComponent(blob.pathname)}`
+  if ("type" in body && typeof body.type === "string" && body.type.startsWith("blob.")) {
+    try {
+      const json = await handleUpload({
+        body: body as HandleUploadBody,
+        request,
+        onBeforeGenerateToken: async (pathname) => {
+          const ext = pathname.toLowerCase().split(".").pop() ?? ""
+          if (!pathname.startsWith(ownPrefix) || !EXTENSIONS.includes(ext)) throw new Error("Use an MP3, M4A, WAV or OGG file")
+          return {
+            allowedContentTypes: [...Object.keys(TYPES), "audio/wave", "audio/m4a", "application/octet-stream"],
+            maximumSizeInBytes: MAX_SONG_BYTES,
+            addRandomSuffix: true,
+          }
+        },
+        onUploadCompleted: async () => {},
+      })
+      return NextResponse.json(json)
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 })
+    }
+  }
 
-  await sql`
-    UPDATE "user" SET link_song_url = ${url}, link_song_title = ${title}, "updatedAt" = now()
-    WHERE id = ${session.user.id}
-  `
-  await deleteSong(current?.songUrl)
-  if (current) revalidatePath(linkPath(current.handle))
+  const { pathname, link, title } = body as { pathname?: string; link?: string; title?: string }
 
-  return NextResponse.json({ url, title })
+  if (typeof pathname === "string") {
+    if (!pathname.startsWith(ownPrefix) || !isSongPath(pathname)) {
+      return NextResponse.json({ error: "Upload not found" }, { status: 400 })
+    }
+    const info = await head(pathname).catch(() => null)
+    if (!info) return NextResponse.json({ error: "Upload not found" }, { status: 400 })
+    if (info.size > MAX_SONG_BYTES) {
+      await del(pathname).catch(() => {})
+      return NextResponse.json({ error: "Song must be under 50 MB" }, { status: 400 })
+    }
+    const name = typeof title === "string" && title.trim() ? title : pathname.split("/").pop() ?? ""
+    return saveSong(userId, `${SONG_PREFIX}${encodeURIComponent(pathname)}`, titleFrom(name))
+  }
+
+  if (typeof link === "string") {
+    const url = link.length < 2000 ? toDirectAudioUrl(link) : null
+    if (!url) return NextResponse.json({ error: "Paste a valid https:// link to an audio file" }, { status: 400 })
+    const name = typeof title === "string" && title.trim() ? title : url.pathname.split("/").pop() || url.hostname
+    return saveSong(userId, url.toString(), titleFrom(name))
+  }
+
+  return NextResponse.json({ error: "Choose a song file or paste a link" }, { status: 400 })
 }
 
 export async function DELETE(request: NextRequest) {
