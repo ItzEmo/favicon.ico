@@ -29,7 +29,13 @@ const RAIN_DROPS = Array.from({ length: 70 }, (_, i) => ({
   delay: Math.round(seeded(i + 401) * 200) / 100,
 }))
 
-export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
+export function UnlockGate({
+  links = {},
+  backgroundUrl = "/images/unlock-rain-bg.webp",
+}: {
+  links?: ArtistLinks
+  backgroundUrl?: string
+}) {
   const pathname = usePathname()
   const [initialPath] = useState(pathname)
   const [showWelcome, setShowWelcome] = useState(false)
@@ -41,13 +47,21 @@ export function UnlockGate({ links = {} }: { links?: ArtistLinks }) {
 
   return (
     <>
-      {gated && <UnlockGateScreen links={links} onUnlocked={handleUnlocked} />}
+      {gated && <UnlockGateScreen links={links} backgroundUrl={backgroundUrl} onUnlocked={handleUnlocked} />}
       {showWelcome && <WelcomePopup onClose={closeWelcome} />}
     </>
   )
 }
 
-function UnlockGateScreen({ links, onUnlocked }: { links: ArtistLinks; onUnlocked: () => void }) {
+function UnlockGateScreen({
+  links,
+  backgroundUrl,
+  onUnlocked,
+}: {
+  links: ArtistLinks
+  backgroundUrl: string
+  onUnlocked: () => void
+}) {
   const [phase, setPhase] = useState<Phase>('locked')
   const [progress, setProgress] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -213,7 +227,7 @@ function UnlockGateScreen({ links, onUnlocked }: { links: ArtistLinks; onUnlocke
     >
       <img
         className="unlock-video absolute inset-0 h-full w-full object-cover"
-        src="/images/unlock-rain-bg.webp"
+        src={backgroundUrl}
         alt=""
         width={1920}
         height={1081}

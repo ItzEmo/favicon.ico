@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { upload } from "@vercel/blob/client"
 import { Check, ChevronDown, Copy, ExternalLink, Eye, EyeOff, ImagePlus, Link2, Loader2, Music2, Plus, Trash2, Upload } from "lucide-react"
 import { updateLinkPage, type LinkPageState } from "@/app/actions/link-page"
 import {
@@ -44,7 +45,9 @@ className="h-11 w-full cursor-pointer appearance-none rounded-full border border
 const tile =
   "relative flex aspect-[3/4] cursor-pointer items-end overflow-hidden rounded-xl border-2 border-transparent bg-muted text-left has-[:checked]:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary"
 
-export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; origin: string }) {
+const MAX_SONG_BYTES = 50 * 1024 * 1024
+
+export function LinkPageEditor({ settings, origin, userId }: { settings: LinkSettings; origin: string; userId: string }) {
   const router = useRouter()
   const [state, formAction, saving] = useActionState<LinkPageState | null, FormData>(updateLinkPage, null)
   const [background, setBackground] = useState<LinkBackground>(settings.background)
@@ -85,13 +88,41 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
     }
   }
 
-  function onPickSong(e: React.ChangeEvent<HTMLInputElement>) {
+  const [songLink, setSongLink] = useState("")
+
+  function saveSong(payload: { pathname?: string; link?: string; title?: string }) {
+    return songRequest({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+  }
+
+  async function onPickSong(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ""
     if (!file) return
-    const body = new FormData()
-    body.append("file", file)
-    void songRequest({ method: "POST", body })
+    if (file.size > MAX_SONG_BYTES) {
+      setSongError("Song must be under 50 MB")
+      return
+    }
+    setSongError(null)
+    setSongBusy(true)
+    try {
+      const safeName = file.name.replace(/[^\w.\- ]+/g, "_")
+      const { pathname } = await upload(`link-song/${userId}/${safeName}`, file, {
+        access: "private",
+        handleUploadUrl: "/api/account/link-song",
+        multipart: file.size > 8 * 1024 * 1024,
+      })
+      await saveSong({ pathname, title: file.name })
+    } catch (error) {
+      setSongError((error as Error).message || "Upload failed")
+      setSongBusy(false)
+    }
+  }
+
+  async function onSaveSongLink() {
+    const link = songLink.trim()
+    if (!link) return
+    await saveSong({ link })
+    setSongLink("")
   }
 
   const fullUrl = `${origin}${linkPath(settings.handle)}`
@@ -376,8 +407,38 @@ export function LinkPageEditor({ settings, origin }: { settings: LinkSettings; o
             </div>
           </div>
           <input ref={songRef} type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,audio/wav,audio/x-wav,audio/ogg,.mp3,.m4a,.wav,.ogg" onChange={onPickSong} className="sr-only" tabIndex={-1} aria-hidden="true" />
+          <div className="flex gap-2">
+            <label htmlFor="link-song-url" className="sr-only">
+              Song link
+            </label>
+            <span className="relative flex flex-1 items-center">
+              <Link2 className="pointer-events-none absolute left-3.5 size-4 text-muted-foreground" aria-hidden="true" />
+              <input
+                id="link-song-url"
+                type="url"
+                inputMode="url"
+                value={songLink}
+                onChange={(e) => setSongLink(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" || e.nativeEvent.isComposing || e.keyCode === 229) return
+                  e.preventDefault()
+                  void onSaveSongLink()
+                }}
+                placeholder="Or paste a link to an MP3, Dropbox or Google Drive file"
+                className="h-10 w-full rounded-full border border-input bg-background/60 pr-4 pl-10 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
+              />
+            </span>
+            <button
+              type="button"
+              onClick={() => void onSaveSongLink()}
+              disabled={songBusy || !songLink.trim()}
+              className="inline-flex h-10 items-center justify-center rounded-full border border-primary/60 px-4 text-sm font-bold text-primary transition-colors hover:bg-primary/15 disabled:opacity-50"
+            >
+              Use link
+            </button>
+          </div>
           <p className="text-xs text-muted-foreground">
-            MP3, M4A, WAV or OGG up to 15 MB. It loops; browsers may wait for the visitor&apos;s first tap before playing sound.
+            MP3, M4A, WAV or OGG up to 50 MB, or a direct link to an audio file. It loops; browsers may wait for the visitor&apos;s first tap before playing sound.
           </p>
           {songError && (
             <p role="alert" className="text-sm text-destructive">

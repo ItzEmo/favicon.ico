@@ -11,6 +11,7 @@ import { DjMiniPlayer } from '@/components/dj-mini-player'
 import { QueueAlert } from '@/components/queue-alert'
 import { QueueOffBanner } from '@/components/queue-off-banner'
 import { getArtistLinks } from '@/lib/artist-links'
+import { DEFAULT_UNLOCK_BG, getUnlockBackground } from '@/lib/site-settings'
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
@@ -57,7 +58,10 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const admin = await isAdmin()
-  const musicLinks = await getArtistLinks().catch(() => ({}))
+  const [musicLinks, unlockBg] = await Promise.all([
+    getArtistLinks().catch(() => ({})),
+    getUnlockBackground().catch(() => null),
+  ])
   return (
     <html
       lang="en"
@@ -84,7 +88,7 @@ export default async function RootLayout({
         )}
         <HoverMascot />
         <QueueAlert />
-        <UnlockGate links={musicLinks} />
+        <UnlockGate links={musicLinks} backgroundUrl={unlockBg ?? DEFAULT_UNLOCK_BG} />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
