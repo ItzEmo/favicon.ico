@@ -74,7 +74,7 @@ export default function ToolsPage() {
         eyebrow="Free utilities"
         title="Producer"
         accent="Tools"
-        description="A growing kit of free utilities to sharpen your sound before it hits the queue."
+        description="A growing kit of free & paid utilities to sharpen your sound before it hits the queue."
       />
 
       <section className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
