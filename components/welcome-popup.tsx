@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { Music2, UserPlus, X } from 'lucide-react'
+import { Gauge, Music2, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const WelcomeCharacter = dynamic(() => import('@/components/welcome-character'), { ssr: false })
@@ -45,8 +45,18 @@ export function WelcomePopup({ onClose }: { onClose: () => void }) {
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
 
-        <h2 id="welcome-popup-title" className="text-xl font-bold text-balance">
-          {"Welcome to Emo's Radio"}
+        <h2 id="welcome-popup-title" className="flex w-full flex-col items-center gap-1 text-xl font-bold">
+          <span>Welcome to</span>
+          <span className="logo-shine relative block w-full max-w-56">
+            <img
+              src="/images/emos-radio-logo.webp"
+              alt="Emo's Radio"
+              width={1117}
+              height={702}
+              className="h-auto w-full select-none"
+              draggable={false}
+            />
+          </span>
         </h2>
 
         <ul className="flex w-full flex-col gap-2 text-left text-sm leading-relaxed">
@@ -61,6 +71,19 @@ export function WelcomePopup({ onClose }: { onClose: () => void }) {
               <span>
                 <span className="font-semibold">Submit</span>
                 <span className="text-muted-foreground"> to send in your music</span>
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/tools/loudness-check"
+              onClick={onClose}
+              className="flex items-center gap-3 rounded-2xl bg-muted/60 px-3 py-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Gauge className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <span>
+                <span className="font-semibold">Mastering Check</span>
+                <span className="text-muted-foreground"> to test your master</span>
               </span>
             </Link>
           </li>
