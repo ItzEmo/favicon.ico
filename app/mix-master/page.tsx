@@ -45,8 +45,8 @@ export default async function MixMasterPage() {
               </li>
             ))}
           </ul>
-          <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-            {"Share a link to your stems or rough mix, pay securely, and Emo will email you when it's done. This is separate from the queue — it won't affect your spot in line."}
+          <p className="w-fit rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-extrabold uppercase tracking-wider text-primary">
+            3 Day Turnaround
           </p>
         </div>
 

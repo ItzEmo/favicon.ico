@@ -8,6 +8,7 @@ import {
   Mic2,
   Calculator,
   ArrowUpRight,
+  SlidersHorizontal,
 } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 
@@ -17,6 +18,13 @@ export const metadata: Metadata = {
 }
 
 const TOOLS = [
+  {
+    icon: SlidersHorizontal,
+    name: "Mix & Mastering",
+    body: "An exclusive Mix & Master by ItzEmo himself — $30.",
+    tag: "Service",
+    href: "/mix-master",
+  },
   {
     icon: Gauge,
     name: "BPM Detector",

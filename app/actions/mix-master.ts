@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { del, head } from "@vercel/blob"
+import { isReferencePath, MAX_REFERENCE_BYTES } from "@/lib/mix-reference"
 import { sql } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
@@ -13,6 +15,8 @@ export interface MixOrderInput {
   email: string
   trackUrl: string
   notes: string
+  referencePath?: string
+  referenceUrl?: string
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -35,18 +39,45 @@ function sanitize(input: MixOrderInput): MixOrderInput {
     throw new Error("Enter a valid link to your stems or rough mix.")
   }
   if (notes.length > 1000) throw new Error("Notes must be under 1000 characters.")
-  return { name, email, trackUrl, notes }
+  const referencePath = String(input.referencePath ?? "").trim()
+  if (referencePath && !isReferencePath(referencePath)) throw new Error("Reference upload not found.")
+  const referenceUrl = String(input.referenceUrl ?? "").trim()
+  if (referenceUrl) {
+    let ref: URL
+    try {
+      ref = new URL(referenceUrl)
+    } catch {
+      throw new Error("Enter a valid link to your reference song.")
+    }
+    if (!/^https?:$/.test(ref.protocol) || referenceUrl.length > 500) {
+      throw new Error("Enter a valid link to your reference song.")
+    }
+  }
+  return { name, email, trackUrl, notes, referencePath, referenceUrl }
+}
+
+async function verifyReference(pathname: string) {
+  if (!pathname) return null
+  const info = await head(pathname).catch(() => null)
+  if (!info) throw new Error("Reference upload not found. Try uploading it again.")
+  if (info.size > MAX_REFERENCE_BYTES) {
+    await del(pathname).catch(() => {})
+    throw new Error("Reference track must be under 50 MB.")
+  }
+  return pathname
 }
 
 export async function createMixMasterCheckout(raw: MixOrderInput) {
   const input = sanitize(raw)
   const session = await auth.api.getSession({ headers: await headers() })
   const orderId = crypto.randomUUID()
+  const referencePath = await verifyReference(input.referencePath ?? "")
 
   await sql`
-    INSERT INTO mix_master_orders (id, user_id, name, email, track_url, notes, amount_cents)
+    INSERT INTO mix_master_orders (id, user_id, name, email, track_url, notes, amount_cents, reference_path, reference_url)
     VALUES (${orderId}, ${session?.user.id ?? null}, ${input.name}, ${input.email},
-            ${input.trackUrl}, ${input.notes}, ${MIX_MASTER_PRICE_IN_CENTS})
+            ${input.trackUrl}, ${input.notes}, ${MIX_MASTER_PRICE_IN_CENTS}, ${referencePath},
+            ${input.referenceUrl || null})
   `
 
   const price = await getCatalogPriceId("mix_master")
