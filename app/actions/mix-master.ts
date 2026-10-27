@@ -6,7 +6,7 @@ import { del, head } from "@vercel/blob"
 import { isReferencePath, MAX_REFERENCE_BYTES } from "@/lib/mix-reference"
 import { sql } from "@/lib/db"
 import { auth } from "@/lib/auth"
-import { stripe } from "@/lib/stripe"
+import { CHECKOUT_PAYMENT_METHODS, checkoutReturnUrl, stripe } from "@/lib/stripe"
 import { requireAdmin } from "@/lib/admin-auth"
 import { getCatalogPriceId, MIX_MASTER_PRICE_IN_CENTS } from "@/lib/stripe-catalog"
 
@@ -85,8 +85,10 @@ export async function createMixMasterCheckout(raw: MixOrderInput) {
   const checkout = await stripe.checkout.sessions.create(
     {
       ui_mode: "embedded_page",
-      redirect_on_completion: "never",
+      redirect_on_completion: "if_required",
+      return_url: await checkoutReturnUrl("/mix-master"),
       mode: "payment",
+      payment_method_types: CHECKOUT_PAYMENT_METHODS,
       line_items: [{ price, quantity: 1 }],
       customer_email: input.email,
       client_reference_id: orderId,

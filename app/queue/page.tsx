@@ -6,6 +6,7 @@ import { ListMusic, Play, Radio, Loader2 } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { QueueList } from "@/components/queue-list"
 import { CheckoutDialog, type CheckoutSession } from "@/components/checkout-dialog"
+import { PaymentReturnNotice } from "@/components/payment-return-notice"
 import { TrackRating, type RatingsData } from "@/components/track-rating"
 import { ArtistName } from "@/components/artist-name"
 import { sourceLabels, type QueueItem } from "@/components/track-types"
@@ -85,6 +86,7 @@ export default function QueuePage() {
         accent="Queue"
         description="Every track lined up for tonight's session. Right after Now Playing comes the Skip+ line, then Skip, then the Free line. A Boost lifts a track to the top of its line — and boosting a boosted Free track moves it into Skip."
       />
+      <PaymentReturnNotice />
 
       <section className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
         <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-primary/40 bg-primary/10 p-4 sm:p-5">

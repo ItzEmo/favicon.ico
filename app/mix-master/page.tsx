@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import { SlidersHorizontal, Check } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { MixMasterForm } from "@/components/mix-master-form"
+import { PaymentReturnNotice } from "@/components/payment-return-notice"
 import { auth } from "@/lib/auth"
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default async function MixMasterPage() {
         accent="Mastering"
         description="An exclusive Mix & Master by ItzEmo himself."
       />
+      <PaymentReturnNotice />
 
       <section className="mx-auto grid w-full max-w-5xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-5">
         <div className="flex flex-col gap-5 lg:col-span-2">
