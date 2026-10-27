@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { sql } from "@/lib/db"
 import { auth } from "@/lib/auth"
-import { stripe } from "@/lib/stripe"
+import { CHECKOUT_PAYMENT_METHODS, checkoutReturnUrl, stripe } from "@/lib/stripe"
 import { applyPaidSession } from "@/lib/apply-payment"
 import { getQueueStatus, type QueueStatus } from "@/lib/queue-settings"
 import { LINES, type LineId, isLineId } from "@/lib/lines"
@@ -241,8 +241,10 @@ async function createCheckout(opts: {
   const price = await getCatalogPriceId(opts.catalogKey)
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded_page",
-    redirect_on_completion: "never",
+    redirect_on_completion: "if_required",
+    return_url: await checkoutReturnUrl("/queue"),
     mode: "payment",
+    payment_method_types: CHECKOUT_PAYMENT_METHODS,
     line_items: [{ price, quantity: 1 }],
     client_reference_id: opts.trackId,
     metadata: opts.metadata,
