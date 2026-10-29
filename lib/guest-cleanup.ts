@@ -1,25 +1,23 @@
 import { del } from "@vercel/blob"
 import { sql } from "@/lib/db"
 
-// Guest (signed-out) submissions with an uploaded audio file are purged two
-// days after submission. Link submissions, member submissions, the on-air
-// track, and vault entries are untouched.
-export async function purgeExpiredGuestUploads(): Promise<number> {
+// Songs in play history (status 'played') are deleted two days after they were
+// played, along with any uploaded audio file. The live queue, the on-air track,
+// and vault entries are untouched.
+export async function purgePlayedHistory(): Promise<number> {
   const rows = (await sql`
     DELETE FROM submissions
-    WHERE user_id IS NULL
-      AND audio_pathname IS NOT NULL
-      AND status <> 'playing'
-      AND created_at < now() - interval '2 days'
+    WHERE status = 'played'
+      AND COALESCE(played_at, created_at) < now() - interval '2 days'
     RETURNING audio_pathname
-  `) as { audio_pathname: string }[]
+  `) as { audio_pathname: string | null }[]
 
-  const pathnames = rows.map((r) => r.audio_pathname)
+  const pathnames = rows.map((r) => r.audio_pathname).filter((p): p is string => Boolean(p))
   if (pathnames.length > 0) {
     try {
       await del(pathnames)
     } catch (err) {
-      console.log("[v0] guest cleanup blob delete error:", (err as Error).message)
+      console.error("History cleanup blob delete error:", (err as Error).message)
     }
   }
   return rows.length

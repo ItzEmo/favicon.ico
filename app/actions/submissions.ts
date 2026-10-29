@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { after } from "next/server"
 import { sql } from "@/lib/db"
-import { purgeExpiredGuestUploads } from "@/lib/guest-cleanup"
+import { purgePlayedHistory } from "@/lib/guest-cleanup"
 import { auth } from "@/lib/auth"
 import { CHECKOUT_PAYMENT_METHODS, checkoutReturnUrl, stripe } from "@/lib/stripe"
 import { applyPaidSession } from "@/lib/apply-payment"
@@ -132,7 +132,7 @@ export async function createFreeSubmission(raw: NewSubmissionInput): Promise<voi
     ON CONFLICT (track_id) DO NOTHING
   `
   revalidatePath("/queue")
-  after(() => purgeExpiredGuestUploads().catch(() => {}))
+  after(() => purgePlayedHistory().catch(() => {}))
 }
 
 // Paid line (skip / skip+): store the track as pending, then open Checkout.
