@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header"
 import { QueueList } from "@/components/queue-list"
 import { CheckoutDialog, type CheckoutSession } from "@/components/checkout-dialog"
 import { PaymentReturnNotice } from "@/components/payment-return-notice"
+import { TikTokLiveCard } from "@/components/tiktok-live-card"
 import { TrackRating, type RatingsData } from "@/components/track-rating"
 import { ArtistName } from "@/components/artist-name"
 import { sourceLabels, type QueueItem } from "@/components/track-types"
@@ -88,7 +89,11 @@ export default function QueuePage() {
       />
       <PaymentReturnNotice />
 
-      <section className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row-reverse lg:items-start">
+      <aside className="w-full max-w-xs self-center empty:hidden lg:sticky lg:top-24 lg:w-72 lg:shrink-0 lg:self-start">
+        <TikTokLiveCard nowPlaying={nowPlaying} />
+      </aside>
+      <section className="mx-auto w-full max-w-2xl min-w-0 flex-1">
         <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-primary/40 bg-primary/10 p-4 sm:p-5">
         <div className="flex items-center gap-4">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -142,6 +147,7 @@ export default function QueuePage() {
           onRated={() => mutateRatings()}
         />
       </section>
+      </div>
 
       <CheckoutDialog
         session={checkout}
