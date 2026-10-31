@@ -2,6 +2,8 @@ import { notFound } from "next/navigation"
 import { headers } from "next/headers"
 import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound, SlidersHorizontal, MonitorPlay } from "lucide-react"
 import { AdminOverlayLink } from "@/components/admin-overlay-link"
+import { AdminTikTokLive } from "@/components/admin-tiktok-live"
+import { getTikTokLiveStatus } from "@/lib/tiktok-live"
 import { AdminMixOrders } from "@/components/admin-mix-orders"
 import { getPaidMixOrders } from "@/lib/mix-master"
 import { AdminUsers } from "@/components/admin-users"
@@ -58,7 +60,7 @@ function SectionHeading({ icon: Icon, title, note }: { icon: typeof Swords; titl
 
 export default async function AdminPage() {
   if (!(await isAdmin())) notFound()
-  const [battles, posts, vaultEntries, musicLinks, queueStatus, users, guests, mixOrders] = await Promise.all([
+  const [battles, posts, vaultEntries, musicLinks, queueStatus, users, guests, mixOrders, tiktokLive] = await Promise.all([
     getBattles(),
     getPosts(),
     getVaultEntries(),
@@ -67,6 +69,7 @@ export default async function AdminPage() {
     getAllUsers(),
     getGuestSubmitters(),
     getPaidMixOrders(),
+    getTikTokLiveStatus(),
   ])
   const h = await headers()
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
@@ -123,6 +126,7 @@ export default async function AdminPage() {
 
         <section id="queue" className="scroll-mt-36">
           <SectionHeading icon={ListMusic} title="Queue" note="Reorder tracks, remove anything, and run the session." />
+          <AdminTikTokLive status={tiktokLive} />
           <AdminQueueSwitches status={queueStatus} />
           <AdminClearQueue />
           <AdminQueue archivedTrackIds={archivedTrackIds} />

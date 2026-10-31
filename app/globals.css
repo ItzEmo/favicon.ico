@@ -200,6 +200,15 @@
   }
 }
 
+@keyframes live-eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.live-eq-bar { animation: live-eq 0.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .live-eq-bar { animation: none; }
+}
+
 @keyframes marquee {
   from {
     transform: translateX(0);
