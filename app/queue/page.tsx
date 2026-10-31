@@ -26,6 +26,9 @@ export default function QueuePage() {
     { refreshInterval: 5000 },
   )
 
+  const { data: liveStatus } = useSWR<{ live: boolean }>("/api/live", fetcher, { refreshInterval: 15000 })
+  const isLive = liveStatus?.live ?? false
+
   const nowPlaying = data?.nowPlaying ?? null
   const upNext = data?.tracks ?? []
 
@@ -82,7 +85,7 @@ export default function QueuePage() {
     <>
       <PageHeader
         icon={ListMusic}
-        eyebrow="Live on air"
+        eyebrow={isLive ? "Live on air" : "Off air"}
         title="The"
         accent="Queue"
         description="Every track lined up for tonight's session. Right after Now Playing comes the Skip+ line, then Skip, then the Free line. A Boost lifts a track to the top of its line — and boosting a boosted Free track moves it into Skip."
