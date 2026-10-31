@@ -1,5 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { SiteNav } from '@/components/site-nav'
 import { SiteFooter } from '@/components/site-footer'
@@ -57,6 +58,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  if ((await headers()).get('x-overlay') === '1') {
+    return (
+      <html
+        lang="en"
+        className={`dark ${geistSans.variable} ${geistMono.variable} bg-transparent`}
+      >
+        <body className="overflow-hidden bg-transparent font-sans antialiased">{children}</body>
+      </html>
+    )
+  }
+
   const admin = await isAdmin()
   const [musicLinks, unlockBg] = await Promise.all([
     getArtistLinks().catch(() => ({})),
