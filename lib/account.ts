@@ -62,13 +62,12 @@ export interface AccountStats {
 export async function getUserStats(userId: string): Promise<AccountStats> {
   const rows = (await sql`
     WITH account_points AS (
-      SELECT s.user_id,
+      SELECT r.artist_user_id AS user_id,
              sum(r.score) * 10 AS points,
              avg(r.score)::float AS avg
-      FROM submissions s
-      JOIN track_ratings r ON r.track_id = s.track_id
-      WHERE s.user_id IS NOT NULL AND s.status <> 'pending'
-      GROUP BY s.user_id
+      FROM track_ratings r
+      WHERE r.artist_user_id IS NOT NULL AND r.track_status IS DISTINCT FROM 'pending'
+      GROUP BY r.artist_user_id
     ),
     ranked AS (
       SELECT user_id, avg,

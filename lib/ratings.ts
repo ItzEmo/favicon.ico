@@ -43,14 +43,14 @@ export async function getUserRatings(userId: string, trackIds: string[]): Promis
 export async function getLeaderboard(limit = 50): Promise<RankedArtist[]> {
   const rows = (await sql`
     select
-      max(s.submitted_by) as artist,
-      (array_agg(s.user_id order by s.created_at desc) filter (where s.user_id is not null))[1] as user_id,
+      max(r.artist_name) as artist,
+      (array_agg(r.artist_user_id order by r.created_at desc) filter (where r.artist_user_id is not null))[1] as user_id,
       avg(r.score)::float as avg,
       count(*)::int as reviews,
       (sum(r.score) * ${POINTS_PER_SCORE})::int as points
     from track_ratings r
-    join submissions s on s.track_id = r.track_id
-    group by lower(trim(s.submitted_by))
+    where r.artist_name is not null
+    group by lower(trim(r.artist_name))
     order by points desc, avg desc
     limit ${limit}
   `) as { artist: string; user_id: string | null; avg: number; reviews: number; points: number }[]
