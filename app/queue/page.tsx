@@ -92,7 +92,7 @@ export default function QueuePage() {
       />
       <PaymentReturnNotice />
 
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row-reverse lg:items-start">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row lg:items-start">
       <aside className="w-full max-w-xs self-center empty:hidden lg:sticky lg:top-24 lg:w-72 lg:shrink-0 lg:self-start">
         <TikTokLiveCard nowPlaying={nowPlaying} />
       </aside>
