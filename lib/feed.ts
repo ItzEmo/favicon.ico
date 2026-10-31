@@ -45,11 +45,11 @@ export async function getFeed(limit = 50): Promise<FeedItem[]> {
       WHERE s.played_at IS NOT NULL
 
       UNION ALL
-      SELECT 'rating-' || r.track_id || '-' || r."userId", 'rating', u.name, s.title,
+      SELECT 'rating-' || r.track_id || '-' || r."userId", 'rating', u.name, r.track_title,
              r.score::text, NULL, NULL, COALESCE(r.updated_at, r.created_at)
       FROM track_ratings r
-      JOIN submissions s ON s.track_id = r.track_id
       LEFT JOIN "user" u ON u.id = r."userId"
+      WHERE r.artist_name IS NOT NULL
 
       UNION ALL
       SELECT 'battle-' || b.id, 'battle', b.a_title || ' by ' || b.a_artist,
