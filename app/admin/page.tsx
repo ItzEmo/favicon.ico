@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound, SlidersHorizontal } from "lucide-react"
+import { headers } from "next/headers"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound, SlidersHorizontal, MonitorPlay } from "lucide-react"
+import { AdminOverlayLink } from "@/components/admin-overlay-link"
 import { AdminMixOrders } from "@/components/admin-mix-orders"
 import { getPaidMixOrders } from "@/lib/mix-master"
 import { AdminUsers } from "@/components/admin-users"
@@ -30,6 +32,7 @@ export const metadata = {
 
 const SECTIONS = [
   { id: "player", label: "Player", icon: Headphones },
+  { id: "overlay", label: "Overlay", icon: MonitorPlay },
   { id: "queue", label: "Queue", icon: ListMusic },
   { id: "mix-orders", label: "Mix Orders", icon: SlidersHorizontal },
   { id: "accounts", label: "Accounts", icon: Users },
@@ -65,6 +68,9 @@ export default async function AdminPage() {
     getGuestSubmitters(),
     getPaidMixOrders(),
   ])
+  const h = await headers()
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
+  const origin = `${h.get("x-forwarded-proto") ?? "https"}://${host}`
   const archivedTrackIds = vaultEntries.flatMap((e) => (e.trackId ? [e.trackId] : []))
 
   return (
@@ -104,6 +110,15 @@ export default async function AdminPage() {
             note="Keeps playing while you move around the site. Use the knob to set your volume."
           />
           <DjPlayer showUpNext={false} />
+        </section>
+
+        <section id="overlay" className="scroll-mt-36">
+          <SectionHeading
+            icon={MonitorPlay}
+            title="Stream Overlay"
+            note="Shows the song on air plus the next two up. Drop it on top of your stream."
+          />
+          <AdminOverlayLink origin={origin} />
         </section>
 
         <section id="queue" className="scroll-mt-36">
