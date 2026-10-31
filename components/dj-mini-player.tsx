@@ -32,7 +32,7 @@ export function DjMiniPlayer() {
         {playing ? <Pause className="size-4" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}
       </Button>
 
-      <Link href="/admin#player" className="min-w-0 flex-1">
+      <Link href="/admin?section=player" className="min-w-0 flex-1">
         <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-primary">
           <Headphones className="size-3" aria-hidden="true" />
           On the decks

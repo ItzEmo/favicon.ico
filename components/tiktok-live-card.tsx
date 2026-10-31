@@ -11,6 +11,7 @@ interface LiveStatus {
   live: boolean
   handle: string | null
   url: string | null
+  avatar: string | null
 }
 
 const BARS = [0.55, 0.9, 0.4, 1, 0.65, 0.8, 0.35, 0.95, 0.5, 0.75, 0.45, 0.85]
@@ -45,15 +46,33 @@ export function TikTokLiveCard({ nowPlaying }: { nowPlaying: QueueItem | null })
         </span>
       </div>
 
-      <div aria-hidden="true" className="relative flex flex-1 items-end justify-center gap-1.5 px-6 pb-6">
-        {BARS.map((h, i) => (
-          <span
-            key={i}
-            className="live-eq-bar w-2.5 origin-bottom rounded-full bg-primary"
-            style={{ height: `${h * 55}%`, animationDelay: `${i * 0.11}s` }}
-          />
-        ))}
-      </div>
+      {data.avatar ? (
+        <div className="relative flex flex-1 items-center justify-center px-6 pb-6">
+          <div className="relative flex size-36 items-center justify-center">
+            <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full border-2 border-destructive opacity-60 [animation-duration:2s]" />
+            <span aria-hidden="true" className="absolute -inset-2 animate-pulse rounded-full border border-primary/60" />
+            <span className="relative block size-full overflow-hidden rounded-full border-4 border-destructive bg-secondary shadow-[0_0_40px_-6px] shadow-destructive/70 transition-transform duration-300 group-hover:scale-105">
+              {/* eslint-disable-next-line @next/next/no-img-element -- signed TikTok CDN URL rotates; skip the image optimizer */}
+              <img
+                src={data.avatar}
+                alt={`@${data.handle} on TikTok`}
+                referrerPolicy="no-referrer"
+                className="size-full object-cover"
+              />
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div aria-hidden="true" className="relative flex flex-1 items-end justify-center gap-1.5 px-6 pb-6">
+          {BARS.map((h, i) => (
+            <span
+              key={i}
+              className="live-eq-bar w-2.5 origin-bottom rounded-full bg-primary"
+              style={{ height: `${h * 55}%`, animationDelay: `${i * 0.11}s` }}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="relative flex flex-col gap-1 border-t border-primary/30 bg-background/70 p-4 backdrop-blur">
         <span className="text-xs font-bold uppercase tracking-wider text-primary">On air right now</span>
