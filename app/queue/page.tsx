@@ -26,6 +26,9 @@ export default function QueuePage() {
     { refreshInterval: 5000 },
   )
 
+  const { data: liveStatus } = useSWR<{ live: boolean }>("/api/live", fetcher, { refreshInterval: 15000 })
+  const isLive = liveStatus?.live ?? false
+
   const nowPlaying = data?.nowPlaying ?? null
   const upNext = data?.tracks ?? []
 
@@ -82,14 +85,14 @@ export default function QueuePage() {
     <>
       <PageHeader
         icon={ListMusic}
-        eyebrow="Live on air"
+        eyebrow={isLive ? "Live on air" : "Off air"}
         title="The"
         accent="Queue"
         description="Every track lined up for tonight's session. Right after Now Playing comes the Skip+ line, then Skip, then the Free line. A Boost lifts a track to the top of its line — and boosting a boosted Free track moves it into Skip."
       />
       <PaymentReturnNotice />
 
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row-reverse lg:items-start">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row lg:items-start">
       <aside className="w-full max-w-xs self-center empty:hidden lg:sticky lg:top-24 lg:w-72 lg:shrink-0 lg:self-start">
         <TikTokLiveCard nowPlaying={nowPlaying} />
       </aside>
