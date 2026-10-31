@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { headers } from "next/headers"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Headphones, Users, UserRound, SlidersHorizontal, MonitorPlay } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay } from "lucide-react"
 import { AdminOverlayLink } from "@/components/admin-overlay-link"
 import { AdminTikTokLive } from "@/components/admin-tiktok-live"
 import { getTikTokLiveStatus } from "@/lib/tiktok-live"
@@ -36,7 +36,6 @@ export const metadata = {
 
 const SECTIONS = [
   { id: "queue", label: "Queue", icon: ListMusic },
-  { id: "player", label: "Player", icon: Headphones },
   { id: "overlay", label: "Overlay", icon: MonitorPlay },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
@@ -81,7 +80,14 @@ async function SectionContent({ section }: { section: SectionId }) {
       ])
       return (
         <>
-          <SectionHeading icon={ListMusic} title="Queue" note="Reorder tracks, remove anything, and run the session." />
+          <SectionHeading
+            icon={ListMusic}
+            title="Queue & DJ Player"
+            note="Play what's on air, reorder tracks, and run the session. Music keeps playing while you move around the site."
+          />
+          <div className="mb-8">
+            <DjPlayer showUpNext={false} />
+          </div>
           <AdminTikTokLive status={tiktokLive} />
           <AdminQueueSwitches status={queueStatus} />
           <AdminClearQueue />
@@ -89,17 +95,6 @@ async function SectionContent({ section }: { section: SectionId }) {
         </>
       )
     }
-    case "player":
-      return (
-        <>
-          <SectionHeading
-            icon={Headphones}
-            title="DJ Player"
-            note="Keeps playing while you move around the site. Use the knob to set your volume."
-          />
-          <DjPlayer showUpNext={false} />
-        </>
-      )
     case "overlay": {
       const h = await headers()
       const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
