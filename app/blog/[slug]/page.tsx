@@ -36,7 +36,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </Link>
         {admin ? (
           <Link
-            href="/admin#blog"
+            href="/admin?section=blog"
             className="flex items-center gap-2 rounded-full border border-primary/60 bg-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-primary transition-colors hover:bg-primary/20"
           >
             <Pencil className="size-3.5" aria-hidden="true" />

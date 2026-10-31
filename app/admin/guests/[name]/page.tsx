@@ -26,7 +26,7 @@ export default async function AdminGuestPage({ params }: { params: Promise<{ nam
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-10 sm:px-6">
       <Link
-        href="/admin#guests"
+        href="/admin?section=guests"
         className="flex w-fit items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" aria-hidden="true" />

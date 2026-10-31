@@ -13,7 +13,7 @@ export function BlogComposer() {
     <div className="mb-8 flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-end gap-2">
         <Link
-          href="/admin#blog"
+          href="/admin?section=blog"
           className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
         >
           <Settings2 className="size-3.5" aria-hidden="true" />

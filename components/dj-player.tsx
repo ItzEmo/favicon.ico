@@ -14,6 +14,7 @@ import {
   Zap,
   ChevronsUp,
 } from "lucide-react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -76,7 +77,10 @@ export function DjPlayer({ showUpNext = true }: { showUpNext?: boolean }) {
     setVolume,
     putOnAir,
     markPlayed,
+    registerFullPlayer,
   } = useDjAudio()
+
+  useEffect(() => registerFullPlayer(), [registerFullPlayer])
 
   const isFree = track?.line === "free"
   const embed = track && !hasAudio ? embedUrl(track.source, track.url) : null

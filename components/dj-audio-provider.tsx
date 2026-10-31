@@ -30,6 +30,10 @@ type DjAudioContextValue = {
   pauseFromPrompt: () => void
   dismissPreviewPrompt: () => void
   setVolume: (volume: number) => void
+  muted: boolean
+  toggleMute: () => void
+  fullPlayerVisible: boolean
+  registerFullPlayer: () => () => void
   putOnAir: (trackId: string) => Promise<void>
   markPlayed: () => Promise<void>
 }
@@ -61,6 +65,9 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
   const [promptHandled, setPromptHandled] = useState(false)
   const [volume, setVolumeState] = useState(0.8)
   const [busy, setBusy] = useState(false)
+  const [muted, setMuted] = useState(false)
+  const [fullPlayerCount, setFullPlayerCount] = useState(0)
+  const resumeOnNextTrack = useRef(false)
 
   const trackId = track?.trackId
   const hasAudio = Boolean(track?.audioPathname)
@@ -75,8 +82,18 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume
-  }, [volume, trackId])
+    if (audioRef.current) {
+      audioRef.current.volume = volume
+      audioRef.current.muted = muted
+    }
+  }, [volume, muted, trackId])
+
+  const toggleMute = useCallback(() => setMuted((m) => !m), [])
+
+  const registerFullPlayer = useCallback(() => {
+    setFullPlayerCount((c) => c + 1)
+    return () => setFullPlayerCount((c) => c - 1)
+  }, [])
 
   useEffect(() => {
     setPlaying(false)
@@ -89,6 +106,7 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
   const setVolume = useCallback((next: number) => {
     const clamped = Math.min(1, Math.max(0, next))
     setVolumeState(clamped)
+    if (clamped > 0) setMuted(false)
     window.localStorage.setItem(VOLUME_STORAGE_KEY, String(clamped))
   }, [])
 
@@ -124,6 +142,7 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
   const putOnAir = useCallback(
     async (id: string) => {
       setBusy(true)
+      resumeOnNextTrack.current = playing
       try {
         await playTrack(id)
         await mutate()
@@ -131,18 +150,19 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
         setBusy(false)
       }
     },
-    [mutate],
+    [mutate, playing],
   )
 
   const markPlayed = useCallback(async () => {
     setBusy(true)
+    resumeOnNextTrack.current = playing
     try {
       await finishAndPlayNext()
       await mutate()
     } finally {
       setBusy(false)
     }
-  }, [mutate])
+  }, [mutate, playing])
 
   function onTimeUpdate() {
     const el = audioRef.current
@@ -171,6 +191,10 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
     pauseFromPrompt,
     dismissPreviewPrompt,
     setVolume,
+    muted,
+    toggleMute,
+    fullPlayerVisible: fullPlayerCount > 0,
+    registerFullPlayer,
     putOnAir,
     markPlayed,
   }
@@ -192,7 +216,12 @@ export function DjAudioProvider({ children }: { children: React.ReactNode }) {
           onTimeUpdate={onTimeUpdate}
           onLoadedMetadata={(e) => {
             e.currentTarget.volume = volume
+            e.currentTarget.muted = muted
             setDuration(e.currentTarget.duration)
+            if (resumeOnNextTrack.current) {
+              resumeOnNextTrack.current = false
+              void e.currentTarget.play().catch(() => {})
+            }
           }}
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
