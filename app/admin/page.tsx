@@ -1,8 +1,10 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { headers } from "next/headers"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay, Vote } from "lucide-react"
 import { AdminOverlayLink } from "@/components/admin-overlay-link"
+import { AdminLivePoll } from "@/components/admin-live-poll"
+import { getVoteKey } from "@/lib/live-poll"
 import { AdminTikTokLive } from "@/components/admin-tiktok-live"
 import { getTikTokLiveStatus } from "@/lib/tiktok-live"
 import { AdminMixOrders } from "@/components/admin-mix-orders"
@@ -107,6 +109,14 @@ async function SectionContent({ section }: { section: SectionId }) {
             note="Shows the song on air plus the next two up. Drop it on top of your stream."
           />
           <AdminOverlayLink origin={origin} />
+          <div className="mt-10">
+            <SectionHeading
+              icon={Vote}
+              title="Live Poll"
+              note="Viewers rate the track on air in your TikTok chat. Votes show on a poll overlay and count toward the Ranks."
+            />
+            <AdminLivePoll origin={origin} voteKey={getVoteKey()} />
+          </div>
         </>
       )
     }
