@@ -6,8 +6,9 @@ export const dynamic = "force-dynamic"
 // Webhook for TikTok chat bridges (TikFinity, Streamer.bot, Social Stream Ninja...).
 // Accepts GET query params or a POST JSON/form body with:
 //   key      - the vote key shown in the admin console
-//   user     - the viewer's TikTok username (also: username, nickname, uniqueId)
-//   comment  - the chat message, e.g. "9" or "10/10" (also: message, score)
+//   user     - the viewer's TikTok username (also: username, nickname, uniqueId, userId)
+//   vote     - the score or chat message, e.g. 5, "9" or "10/10" (also: comment, message, score)
+// Extra fields such as platform or pollId are ignored; votes go to the poll that is currently open.
 async function handle(req: NextRequest) {
   const params = new URLSearchParams(req.nextUrl.searchParams)
   if (req.method === "POST") {
@@ -29,8 +30,15 @@ async function handle(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  const voter = params.get("user") ?? params.get("username") ?? params.get("uniqueId") ?? params.get("nickname") ?? ""
-  const message = params.get("comment") ?? params.get("message") ?? params.get("score") ?? ""
+  const voter =
+    params.get("user") ??
+    params.get("username") ??
+    params.get("uniqueId") ??
+    params.get("nickname") ??
+    params.get("userId") ??
+    ""
+  const message =
+    params.get("vote") ?? params.get("comment") ?? params.get("message") ?? params.get("score") ?? ""
   const score = parseScore(message)
   if (score === null) return NextResponse.json({ ok: false, error: "No 1-10 score in message" })
 
