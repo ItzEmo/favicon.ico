@@ -24,7 +24,7 @@ export default async function RanksPage() {
         eyebrow="Voted by listeners"
         title="The"
         accent="Ranks"
-        description={`Every vote on the queue counts. Each rating is worth its score × ${POINTS_PER_SCORE} points — so artists climb by scoring high and showing up.`}
+        description={`Every vote on the queue and in the TikTok live chat counts. Each rating is worth its score × ${POINTS_PER_SCORE} points — so artists climb by scoring high and showing up.`}
       />
 
       <section className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">

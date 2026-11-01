@@ -23,8 +23,13 @@ export async function getRatingSummaries(trackIds: string[]): Promise<Record<str
   if (trackIds.length === 0) return {}
   const rows = (await sql`
     select track_id, avg(score)::float as avg, count(*)::int as count
-    from track_ratings
-    where track_id = any(${trackIds})
+    from (
+      select track_id, score from track_ratings where track_id = any(${trackIds})
+      union all
+      select p.track_id, v.score
+      from live_poll_votes v join live_polls p on p.id = v.poll_id
+      where p.track_id = any(${trackIds})
+    ) r
     group by track_id
   `) as { track_id: string; avg: number; count: number }[]
   return Object.fromEntries(rows.map((r) => [r.track_id, { avg: r.avg, count: r.count }]))
@@ -48,7 +53,13 @@ export async function getLeaderboard(limit = 50): Promise<RankedArtist[]> {
       avg(r.score)::float as avg,
       count(*)::int as reviews,
       (sum(r.score) * ${POINTS_PER_SCORE})::int as points
-    from track_ratings r
+    from (
+      select artist_name, artist_user_id, score, created_at from track_ratings
+      union all
+      -- TikTok live poll votes count toward the same leaderboard.
+      select p.artist_name, p.artist_user_id, v.score, v.created_at
+      from live_poll_votes v join live_polls p on p.id = v.poll_id
+    ) r
     where r.artist_name is not null
     group by lower(trim(r.artist_name))
     order by points desc, avg desc
