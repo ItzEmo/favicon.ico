@@ -26,8 +26,16 @@ async function handle(req: NextRequest) {
     }
   }
 
-  if (!isValidVoteKey(params.get("key"))) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 })
+  const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? null
+  const key = params.get("key") ?? req.headers.get("x-vote-key") ?? bearer
+  if (!key) {
+    return NextResponse.json(
+      { ok: false, error: "Missing vote key. Use the POST URL from the admin console (it ends in ?key=...)." },
+      { status: 401 },
+    )
+  }
+  if (!isValidVoteKey(key)) {
+    return NextResponse.json({ ok: false, error: "Wrong vote key" }, { status: 401 })
   }
 
   const voter =
