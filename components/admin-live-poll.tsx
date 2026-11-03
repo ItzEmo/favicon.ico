@@ -49,6 +49,7 @@ export function AdminLivePoll({ origin, voteKey }: { origin: string; voteKey: st
 
   const overlayUrl = `${origin}/overlay/poll`
   const webhookUrl = `${origin}/api/live-poll/vote?key=${voteKey}&user={username}&comment={comment}`
+  const postUrl = `${origin}/api/live-poll/vote?key=${voteKey}`
 
   function run(action: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null)
@@ -123,6 +124,11 @@ export function AdminLivePoll({ origin, voteKey }: { origin: string; voteKey: st
           </Button>
         </div>
         <CopyField label="Chat vote webhook (keep private)" value={webhookUrl} />
+        <CopyField label="JSON POST URL (keep private)" value={postUrl} />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Sending JSON like <code className="font-mono">{'{"username":"viewer123","vote":5}'}</code>? POST it to the
+          JSON URL above. A poll must be open or votes are rejected.
+        </p>
         <p className="text-xs leading-relaxed text-muted-foreground">
           TikTok doesn&apos;t let websites read live chat directly, so votes come in through a chat tool like
           TikFinity or Streamer.bot. Set it to call this webhook on every chat comment, replacing{" "}
