@@ -82,10 +82,14 @@ export function StreamOverlay({ align }: { align: "left" | "right" }) {
       )}
     >
       {nowPlaying ? (
-        <div
-          key={nowPlaying.trackId}
-          className="overlay-pop relative flex w-full items-center gap-4 rounded-3xl border-2 border-primary bg-card/90 p-3 pr-5 shadow-2xl shadow-primary/40 backdrop-blur-md"
-        >
+        <div key={nowPlaying.trackId} className="relative mt-32 w-full">
+          <img
+            src="/images/overlay-character.png"
+            alt=""
+            aria-hidden="true"
+            className="overlay-peek pointer-events-none absolute bottom-[calc(100%-2.5rem)] right-2 z-0 w-44 select-none drop-shadow-2xl"
+          />
+        <div className="overlay-pop relative z-10 flex w-full items-center gap-4 rounded-3xl border-2 border-primary bg-card/90 p-3 pr-5 shadow-2xl shadow-primary/40 backdrop-blur-md">
           <span className="absolute -top-3 left-6 flex -rotate-3 items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-black uppercase tracking-widest text-primary-foreground shadow-lg">
             <span className="overlay-live size-2 rounded-full bg-primary-foreground" />
             On Air
@@ -101,6 +105,7 @@ export function StreamOverlay({ align }: { align: "left" | "right" }) {
             </span>
           </div>
           <Equalizer />
+        </div>
         </div>
       ) : (
         <div className="overlay-pop flex -rotate-2 items-center gap-3 rounded-3xl border-2 border-primary bg-card/90 px-5 py-3 shadow-2xl shadow-primary/40 backdrop-blur-md">
