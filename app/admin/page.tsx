@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { headers } from "next/headers"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay, Vote } from "lucide-react"
+import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay, Vote, Dices } from "lucide-react"
+import { AdminSkipSpin } from "@/components/admin-skip-spin"
+import { getEligibleEntrants, getWinners } from "@/lib/skip-spin"
 import { AdminOverlayLink } from "@/components/admin-overlay-link"
 import { AdminLivePoll } from "@/components/admin-live-poll"
 import { getVoteKey } from "@/lib/live-poll"
@@ -39,6 +41,7 @@ export const metadata = {
 const SECTIONS = [
   { id: "queue", label: "Queue", icon: ListMusic },
   { id: "overlay", label: "Overlay", icon: MonitorPlay },
+  { id: "free-skip", label: "Free Skip", icon: Dices },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
   { id: "mix-orders", label: "Mix Orders", icon: SlidersHorizontal },
@@ -117,6 +120,26 @@ async function SectionContent({ section }: { section: SectionId }) {
             />
             <AdminLivePoll origin={origin} voteKey={getVoteKey()} />
           </div>
+        </>
+      )
+    }
+    case "free-skip": {
+      const h = await headers()
+      const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
+      const origin = `${h.get("x-forwarded-proto") ?? "https"}://${host}`
+      const [entrants, winners] = await Promise.all([getEligibleEntrants(), getWinners()])
+      return (
+        <>
+          <SectionHeading
+            icon={Dices}
+            title="Free Skip Jackpot"
+            note="Spin to give one random Free-line artist a free skip. One winner per spin, and nobody can win twice."
+          />
+          <AdminSkipSpin
+            origin={origin}
+            entrants={entrants.map(({ key, name, title }) => ({ key, name, title }))}
+            winners={winners.map(({ id, winner, title, createdAt }) => ({ id, winner, title, createdAt }))}
+          />
         </>
       )
     }

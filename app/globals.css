@@ -37,6 +37,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-jackpot: oklch(0.84 0.16 85);
+  --color-jackpot-foreground: oklch(0.2 0.05 60);
   --font-heading: var(--font-sans);
   --font-sans: var(--font-geist-sans), 'Geist Fallback';
   --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
@@ -930,4 +932,29 @@
   }
   @media (prefers-reduced-motion: reduce) {
   .overlay-vinyl, .overlay-eq, .overlay-live, .overlay-pop, .overlay-slide, .overlay-peek { animation: none; }
+}
+
+/* Free Skip jackpot reel */
+.jackpot-bulb {
+  background: var(--color-jackpot);
+  box-shadow: 0 0 6px var(--color-jackpot), 0 0 14px color-mix(in oklch, var(--color-jackpot) 60%, transparent);
+  animation: jackpot-chase 0.9s steps(1) infinite;
+}
+.jackpot-bulb:nth-child(even) { animation-delay: -0.45s; }
+[data-phase="spinning"] .jackpot-bulb { animation-duration: 0.3s; }
+[data-phase="spinning"] .jackpot-bulb:nth-child(even) { animation-delay: -0.15s; }
+[data-phase="won"] .jackpot-bulb { animation: jackpot-flash 0.25s steps(1) 10, jackpot-chase 0.9s steps(1) 2.5s infinite; }
+.jackpot-reel { transition: transform 5.6s cubic-bezier(0.1, 0.72, 0.12, 1); }
+.jackpot-win { animation: jackpot-win 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.jackpot-glow { animation: jackpot-glow 1.4s ease-in-out infinite alternate; }
+@keyframes jackpot-chase { 50% { opacity: 0.2; box-shadow: none; } }
+@keyframes jackpot-flash { 50% { opacity: 0.1; } }
+@keyframes jackpot-win { from { opacity: 0; scale: 0.4; rotate: -6deg; } }
+@keyframes jackpot-glow {
+  from { text-shadow: 0 0 8px color-mix(in oklch, var(--color-jackpot) 70%, transparent); }
+  to { text-shadow: 0 0 22px var(--color-jackpot), 0 0 44px color-mix(in oklch, var(--color-jackpot) 50%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jackpot-bulb, .jackpot-win, .jackpot-glow { animation: none; }
+  .jackpot-reel { transition-duration: 0.01s; }
 }
