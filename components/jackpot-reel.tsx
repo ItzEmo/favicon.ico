@@ -111,6 +111,51 @@ function Bulbs({ count }: { count: number }) {
   )
 }
 
+function WinnerPopup({ name, large }: { name: string; large: boolean }) {
+  const words = name.split(/(\s+)/)
+  let letterIndex = 0
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2"
+      aria-hidden="true"
+    >
+      <div className="jp-winner flex max-w-full flex-col items-center gap-2 rounded-[2rem] px-6 py-5 sm:px-10 sm:py-7">
+        <span className="jp-winner-tag rounded-full px-4 py-1 text-xs font-black uppercase tracking-[0.4em] text-background">
+          Winner
+        </span>
+        <p
+          className={cn(
+            "jp-winner-name max-w-full text-balance break-words text-center font-black uppercase italic leading-none tracking-tight text-jackpot",
+            large ? "text-4xl sm:text-7xl" : "text-3xl sm:text-5xl",
+          )}
+        >
+          {words.map((word, w) =>
+            /^\s+$/.test(word) ? (
+              " "
+            ) : (
+              <span key={w} className="inline-block whitespace-nowrap">
+                {Array.from(word).map((char, c) => (
+                  <span
+                    key={c}
+                    className="jp-winner-letter inline-block"
+                    style={{ animationDelay: `${250 + letterIndex++ * 55}ms` }}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+            ),
+          )}
+        </p>
+        <span className="jp-winner-sub text-[0.7rem] font-bold uppercase tracking-[0.35em] text-jackpot/80">
+          Free skip unlocked
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export function JackpotReel({
   spin,
   size = "lg",
@@ -242,6 +287,8 @@ export function JackpotReel({
           })}
         </div>
       )}
+
+      {phase === "won" && <WinnerPopup name={spin.winner} large={lg} />}
 
       <div aria-live="polite" className="sr-only">
         {phase === "won" ? `${spin.winner} wins a free skip` : ""}

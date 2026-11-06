@@ -1063,6 +1063,53 @@
   15% { opacity: 1; }
   100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1) rotateY(900deg); }
 }
+/* Winner name pop-up: slams in over the machine, holds, then clears so the landed reel shows */
+.jp-winner {
+  --gold: var(--color-jackpot);
+  --gold-deep: color-mix(in oklch, var(--color-jackpot) 45%, var(--background));
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in oklch, var(--gold) 22%, var(--background)), color-mix(in oklch, var(--background) 94%, transparent) 70%);
+  border: 3px solid var(--gold);
+  box-shadow:
+    0 0 0 6px color-mix(in oklch, var(--gold-deep) 70%, transparent),
+    0 0 60px color-mix(in oklch, var(--gold) 55%, transparent),
+    inset 0 0 30px color-mix(in oklch, var(--gold) 25%, transparent);
+  animation: jp-winner-life 7s cubic-bezier(0.2, 0.9, 0.25, 1.2) 0.35s both;
+}
+.jp-winner-tag {
+  background: var(--gold);
+  box-shadow: 0 0 18px color-mix(in oklch, var(--gold) 70%, transparent);
+  animation: jp-winner-tag 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.45s both;
+}
+.jp-winner-name {
+  text-shadow:
+    0 2px 0 var(--gold-deep),
+    0 4px 0 color-mix(in oklch, var(--gold-deep) 70%, var(--background)),
+    0 0 28px color-mix(in oklch, var(--gold) 70%, transparent);
+}
+.jp-winner-letter {
+  animation: jp-winner-letter 0.55s cubic-bezier(0.3, 1.7, 0.5, 1) both, jp-winner-shine 1.4s ease-in-out 1.6s 3;
+}
+.jp-winner-sub { animation: jp-winner-tag 0.5s ease-out 1.2s both; }
+@keyframes jp-winner-life {
+  0% { opacity: 0; transform: perspective(600px) translateZ(-300px) rotateX(35deg) scale(0.4); }
+  8% { opacity: 1; transform: perspective(600px) translateZ(40px) rotateX(-6deg) scale(1.08); }
+  13% { transform: perspective(600px) translateZ(0) rotateX(0) scale(1); }
+  88% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.85) translateY(20px); }
+}
+@keyframes jp-winner-tag {
+  from { opacity: 0; transform: translateY(-12px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes jp-winner-letter {
+  0% { opacity: 0; transform: translateY(0.6em) scale(0.3) rotate(-12deg); }
+  70% { opacity: 1; transform: translateY(-0.12em) scale(1.15) rotate(3deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes jp-winner-shine {
+  50% { color: var(--foreground); transform: translateY(-0.08em); }
+}
 @media (prefers-reduced-motion: reduce) {
   .jackpot-bulb, .jp-cabinet, .jp-title, .jp-payline, .jp-hit, .jp-lever-arm, .jp-coin { animation: none !important; }
+  .jp-winner, .jp-winner-tag, .jp-winner-letter, .jp-winner-sub { animation: none !important; }
 }
