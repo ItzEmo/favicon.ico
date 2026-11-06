@@ -41,7 +41,6 @@ export const metadata = {
 const SECTIONS = [
   { id: "queue", label: "Queue", icon: ListMusic },
   { id: "overlay", label: "Overlay", icon: MonitorPlay },
-  { id: "free-skip", label: "Free Skip", icon: Dices },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
   { id: "mix-orders", label: "Mix Orders", icon: SlidersHorizontal },
@@ -104,6 +103,7 @@ async function SectionContent({ section }: { section: SectionId }) {
       const h = await headers()
       const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
       const origin = `${h.get("x-forwarded-proto") ?? "https"}://${host}`
+      const [entrants, winners] = await Promise.all([getEligibleEntrants(), getWinners()])
       return (
         <>
           <SectionHeading
@@ -120,26 +120,18 @@ async function SectionContent({ section }: { section: SectionId }) {
             />
             <AdminLivePoll origin={origin} voteKey={getVoteKey()} />
           </div>
-        </>
-      )
-    }
-    case "free-skip": {
-      const h = await headers()
-      const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
-      const origin = `${h.get("x-forwarded-proto") ?? "https"}://${host}`
-      const [entrants, winners] = await Promise.all([getEligibleEntrants(), getWinners()])
-      return (
-        <>
-          <SectionHeading
-            icon={Dices}
-            title="Free Skip Jackpot"
-            note="Spin to give one random Free-line artist a free skip. One winner per spin, and nobody can win twice."
-          />
-          <AdminSkipSpin
-            origin={origin}
-            entrants={entrants.map(({ key, name, title }) => ({ key, name, title }))}
-            winners={winners.map(({ id, winner, title, createdAt }) => ({ id, winner, title, createdAt }))}
-          />
+          <div className="mt-10">
+            <SectionHeading
+              icon={Dices}
+              title="Free Skip Jackpot"
+              note="Spin to give one random Free-line artist a free skip. One winner per spin, and nobody can win twice."
+            />
+            <AdminSkipSpin
+              origin={origin}
+              entrants={entrants.map(({ key, name, title }) => ({ key, name, title }))}
+              winners={winners.map(({ id, winner, title, createdAt }) => ({ id, winner, title, createdAt }))}
+            />
+          </div>
         </>
       )
     }
