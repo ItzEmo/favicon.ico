@@ -10,6 +10,7 @@ import { CHECKOUT_PAYMENT_METHODS, checkoutReturnUrl, stripe } from "@/lib/strip
 import { applyPaidSession } from "@/lib/apply-payment"
 import { getQueueStatus, type QueueStatus } from "@/lib/queue-settings"
 import { LINES, type LineId, isLineId } from "@/lib/lines"
+import { claimCrownSkip, releaseCrownSkip } from "@/lib/crown-skip"
 import { type CatalogKey, catalogKeyForLine, getCatalogPriceId } from "@/lib/stripe-catalog"
 import type { QueueItem, Source } from "@/components/track-types"
 
@@ -138,6 +139,32 @@ export async function createFreeSubmission(raw: NewSubmissionInput): Promise<voi
   `
   revalidatePath("/queue")
   after(() => purgePlayedHistory().catch(() => {}))
+}
+
+// Crowned accounts get one free Skip-line submission per week.
+export async function createCrownSkipSubmission(raw: NewSubmissionInput): Promise<void> {
+  if (!(await getQueueStatus()).skipsOpen) throw new Error("Skips are closed")
+  const input = sanitizeSubmission(raw)
+  const userId = await getSessionUserId()
+  if (!userId) throw new Error("Sign in to use your crown skip")
+
+  if (!(await claimCrownSkip(userId, input.trackId))) {
+    throw new Error("Your free crown skip for this week is already used")
+  }
+
+  const inserted = (await sql`
+    INSERT INTO submissions (track_id, url, title, submitted_by, source, line, status, audio_pathname, entered_at, user_id)
+    VALUES (${input.trackId}, ${input.url}, ${input.title}, ${input.submittedBy}, ${input.source}, 'skip', 'active', ${input.audioPathname ?? null}, now(), ${userId})
+    ON CONFLICT (track_id) DO NOTHING
+    RETURNING track_id
+  `) as { track_id: string }[]
+  if (inserted.length === 0) {
+    await releaseCrownSkip(userId, input.trackId)
+    throw new Error("This submission already exists")
+  }
+
+  revalidatePath("/queue")
+  revalidatePath("/submit")
 }
 
 // Paid line (skip / skip+): store the track as pending, then open Checkout.

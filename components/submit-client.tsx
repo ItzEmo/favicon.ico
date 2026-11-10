@@ -15,9 +15,11 @@ import { LINES, LINE_ORDER, formatPrice, type LineId } from "@/lib/lines"
 import { isLineOpen, type QueueStatus } from "@/lib/queue-status"
 import { rememberTrack } from "@/lib/my-tracks"
 import {
+  createCrownSkipSubmission,
   createFreeSubmission,
   createPaidSubmission,
 } from "@/app/actions/submissions"
+import { CrownSkipBanner } from "@/components/crown-skip-banner"
 
 const GUIDELINES = [
   {
@@ -37,11 +39,24 @@ const GUIDELINES = [
   },
 ]
 
-export function SubmitClient({ status }: { status: QueueStatus }) {
+interface CrownSkipInfo {
+  crowned: boolean
+  available: boolean
+  resetsAt: string | null
+}
+
+export function SubmitClient({ status, crownSkip }: { status: QueueStatus; crownSkip: CrownSkipInfo }) {
+  const [crownSkipAvailable, setCrownSkipAvailable] = useState(crownSkip.available)
+  const useCrownSkipNow = crownSkipAvailable && status.skipsOpen
   const closedLines = LINE_ORDER.filter((id) => !isLineOpen(status, id))
   const firstOpenLine = LINE_ORDER.find((id) => isLineOpen(status, id)) ?? "free"
   const allClosed = closedLines.length === LINE_ORDER.length
-  const [submitted, setSubmitted] = useState<{ track: Track; line: LineId; bonus?: Track | null } | null>(null)
+  const [submitted, setSubmitted] = useState<{
+    track: Track
+    line: LineId
+    bonus?: Track | null
+    crown?: boolean
+  } | null>(null)
   const [method, setMethod] = useState<"link" | "file">("link")
   const [line, setLine] = useState<LineId>(status.freeOpen ? "free" : firstOpenLine)
   const [pending, setPending] = useState(false)
@@ -114,6 +129,11 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
         })
         rememberTrack(track.id)
         setSubmitted({ track, line })
+      } else if (line === "skip" && useCrownSkipNow) {
+        await createCrownSkipSubmission(toInput(track))
+        rememberTrack(track.id)
+        setCrownSkipAvailable(false)
+        setSubmitted({ track, line, crown: true })
       } else {
         const { clientSecret, sessionId, publishableKey } = await createPaidSubmission(
           {
@@ -136,8 +156,13 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
         })
       }
     } catch (err) {
-      console.log("[v0] submission error:", (err as Error).message)
-      setError("Something went wrong starting your submission. Please try again.")
+      const message = (err as Error).message
+      if (message.includes("crown skip")) {
+        setCrownSkipAvailable(false)
+        setError("Your free crown skip for this week is already used.")
+      } else {
+        setError("Something went wrong starting your submission. Please try again.")
+      }
     } finally {
       setPending(false)
     }
@@ -158,7 +183,9 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
       ? "Submit To Free Line"
       : line === "skipplus"
         ? "Next — Optional Second Song"
-        : `Pay ${formatPrice(LINES[line].priceInCents)} — ${LINES[line].shortName} Line`
+        : line === "skip" && useCrownSkipNow
+          ? "Use Free Crown Skip"
+          : `Pay ${formatPrice(LINES[line].priceInCents)} — ${LINES[line].shortName} Line`
 
   return (
     <>
@@ -178,7 +205,7 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
                 <CheckCircle2 className="size-7" aria-hidden="true" />
               </span>
               <h2 className="text-xl font-extrabold uppercase tracking-tight text-foreground">
-                {submitted.line === "free" ? "You're In The Queue" : "Payment Confirmed"}
+                {submitted.line === "free" || submitted.crown ? "You're In The Queue" : "Payment Confirmed"}
               </h2>
               <p className="max-w-sm text-sm text-muted-foreground text-pretty">
                 <span className="font-semibold text-foreground">{submitted.track.title}</span>
@@ -329,6 +356,16 @@ export function SubmitClient({ status }: { status: QueueStatus }) {
             </div>
           ) : (
             <div className="flex flex-col gap-6">
+              {crownSkip.crowned ? (
+                <CrownSkipBanner
+                  available={crownSkipAvailable}
+                  skipsOpen={status.skipsOpen}
+                  resetsAt={crownSkip.resetsAt}
+                  selected={line === "skip"}
+                  onUse={() => handleLineChange("skip")}
+                />
+              ) : null}
+
               <LineSelector value={line} onChange={handleLineChange} closedLines={closedLines} />
 
               <div className="h-px w-full bg-border" />
