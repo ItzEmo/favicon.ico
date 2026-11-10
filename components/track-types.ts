@@ -25,6 +25,7 @@ export interface QueueItem {
   audioPathname?: string | null
   // The account that submitted it, when signed in — links to their public profile.
   userId?: string | null
+  crowned?: boolean
 }
 
 export function detectSource(url: string): Source {

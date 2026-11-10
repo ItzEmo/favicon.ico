@@ -74,15 +74,17 @@ async function getActiveTrackLine(trackId: string): Promise<LineId | null> {
 // whoever entered the line first. A later boost never passes an earlier one.
 export async function getQueue(): Promise<QueueItem[]> {
   const rows = (await sql`
-    SELECT track_id, url, title, submitted_by, source, line, boosted, created_at, audio_pathname, user_id
-    FROM submissions
-    WHERE status = 'active'
+    SELECT s.track_id, s.url, s.title, s.submitted_by, s.source, s.line, s.boosted, s.created_at,
+           s.audio_pathname, s.user_id, COALESCE(u.crowned, false) AS crowned
+    FROM submissions s
+    LEFT JOIN "user" u ON u.id = s.user_id
+    WHERE s.status = 'active'
     ORDER BY
-      CASE line WHEN 'skipplus' THEN 0 WHEN 'skip' THEN 1 WHEN 'boost' THEN 2 ELSE 3 END ASC,
-      boost_cents DESC,
-      boosted_at ASC NULLS LAST,
-      entered_at ASC NULLS LAST,
-      created_at ASC
+      CASE s.line WHEN 'skipplus' THEN 0 WHEN 'skip' THEN 1 WHEN 'boost' THEN 2 ELSE 3 END ASC,
+      s.boost_cents DESC,
+      s.boosted_at ASC NULLS LAST,
+      s.entered_at ASC NULLS LAST,
+      s.created_at ASC
   `) as Record<string, unknown>[]
 
   return rows.map(toQueueItem)
@@ -93,10 +95,12 @@ export async function getQueue(): Promise<QueueItem[]> {
 // always line up underneath Now Playing.
 export async function getNowPlaying(): Promise<QueueItem | null> {
   const rows = (await sql`
-    SELECT track_id, url, title, submitted_by, source, line, boosted, created_at, audio_pathname, user_id
-    FROM submissions
-    WHERE status = 'playing'
-    ORDER BY played_at DESC NULLS LAST
+    SELECT s.track_id, s.url, s.title, s.submitted_by, s.source, s.line, s.boosted, s.created_at,
+           s.audio_pathname, s.user_id, COALESCE(u.crowned, false) AS crowned
+    FROM submissions s
+    LEFT JOIN "user" u ON u.id = s.user_id
+    WHERE s.status = 'playing'
+    ORDER BY s.played_at DESC NULLS LAST
     LIMIT 1
   `) as Record<string, unknown>[]
   return rows[0] ? toQueueItem(rows[0]) : null
@@ -114,6 +118,7 @@ function toQueueItem(r: Record<string, unknown>): QueueItem {
     createdAt: new Date(r.created_at as string).toISOString(),
     audioPathname: (r.audio_pathname as string | null) ?? null,
     userId: (r.user_id as string | null) ?? null,
+    crowned: Boolean(r.crowned),
   }
 }
 
