@@ -189,7 +189,7 @@ function QueueRow({
               {sourceLabels[track.source]}
             </span>
             <span className="truncate">
-              by <ArtistName name={track.submittedBy} userId={track.userId} />
+              by <ArtistName name={track.submittedBy} userId={track.userId} crowned={track.crowned} />
             </span>
           </div>
         </div>

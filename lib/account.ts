@@ -76,8 +76,7 @@ export async function getUserStats(userId: string): Promise<AccountStats> {
       FROM account_points
     )
     SELECT
-      (SELECT count(*)::int FROM submissions
-        WHERE user_id = ${userId} AND status <> 'pending') AS submissions,
+      (SELECT songs_sent FROM "user" WHERE id = ${userId}) AS submissions,
       (SELECT avg FROM ranked WHERE user_id = ${userId}) AS avg_score,
       (SELECT rank FROM ranked WHERE user_id = ${userId}) AS rank,
       (SELECT count(*)::int FROM account_points) AS ranked_accounts
@@ -136,6 +135,7 @@ export interface PublicProfile {
   image: string | null
   instagram: string | null
   musicLinks: MusicLink[]
+  crowned: boolean
   joinedAt: string
   stats: AccountStats
 }
@@ -143,11 +143,12 @@ export interface PublicProfile {
 // Banned accounts are hidden from the public, so they resolve to null.
 export async function getPublicProfile(userId: string): Promise<PublicProfile | null> {
   const rows = (await sql`
-    SELECT id, name, image, instagram, music_links, "createdAt" AS created_at
+    SELECT id, name, image, instagram, music_links, crowned, "createdAt" AS created_at
     FROM "user"
     WHERE id = ${userId} AND banned IS NOT TRUE
     LIMIT 1
   `) as {
+    crowned: boolean
     id: string
     name: string
     image: string | null
@@ -163,6 +164,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     image: row.image,
     instagram: row.instagram,
     musicLinks: coerceMusicLinks(row.music_links),
+    crowned: Boolean(row.crowned),
     joinedAt: new Date(row.created_at).toISOString(),
     stats: await getUserStats(row.id),
   }

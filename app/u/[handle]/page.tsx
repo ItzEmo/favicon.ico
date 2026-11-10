@@ -1,3 +1,4 @@
+import { CrownBadge } from "@/components/artist-name"
 import type { CSSProperties } from "react"
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -108,6 +109,7 @@ export default async function LinkPage({ params }: Props) {
               </div>
             )}
             <div className="flex flex-col gap-1">
+              {page.crowned ? <CrownBadge className="mx-auto size-8 drop-shadow-lg" /> : null}
               {link.headerStyle === "name" ? (
                 <h1
                   className={`${bubbleFont.className} max-w-full text-balance break-words text-7xl leading-[0.85] text-foreground/90 uppercase sm:text-8xl [-webkit-text-stroke:2px_var(--foreground)] [text-shadow:0_0_2px_var(--foreground),0_4px_24px_var(--primary),0_2px_16px_var(--background)]`}

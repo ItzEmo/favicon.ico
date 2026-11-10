@@ -118,7 +118,7 @@ export default function QueuePage() {
                   {nowPlaying.title}
                 </p>
                 <p className="truncate text-sm text-muted-foreground">
-                  submitted by <ArtistName name={nowPlaying.submittedBy} userId={nowPlaying.userId} /> &middot; {sourceLabels[nowPlaying.source]}
+                  submitted by <ArtistName name={nowPlaying.submittedBy} userId={nowPlaying.userId} crowned={nowPlaying.crowned} /> &middot; {sourceLabels[nowPlaying.source]}
                 </p>
               </>
             ) : (
