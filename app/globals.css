@@ -1113,3 +1113,73 @@
   .jackpot-bulb, .jp-cabinet, .jp-title, .jp-payline, .jp-hit, .jp-lever-arm, .jp-coin { animation: none !important; }
   .jp-winner, .jp-winner-tag, .jp-winner-letter, .jp-winner-sub { animation: none !important; }
 }
+
+/* Unlock screen: submit call-to-action */
+.submit-cta {
+  filter: drop-shadow(0 0 28px color-mix(in oklch, var(--primary) 45%, transparent));
+}
+.submit-cta__frame {
+  position: relative;
+  clip-path: polygon(22px 0, calc(100% - 22px) 0, 100% 22px, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px);
+  background:
+    linear-gradient(160deg, color-mix(in oklch, var(--primary) 38%, var(--background)) 0%, color-mix(in oklch, var(--background) 92%, transparent) 55%),
+    repeating-linear-gradient(90deg, transparent 0 3px, color-mix(in oklch, var(--foreground) 4%, transparent) 3px 4px);
+  backdrop-filter: blur(10px);
+}
+.submit-cta__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: inherit;
+  padding: 1px;
+  background: linear-gradient(160deg, var(--accent), color-mix(in oklch, var(--primary) 40%, transparent) 50%, var(--accent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.submit-cta__chrome {
+  background: linear-gradient(180deg, var(--foreground) 0%, var(--foreground) 45%, color-mix(in oklch, var(--foreground) 55%, var(--primary)) 52%, var(--foreground) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 color-mix(in oklch, var(--primary) 70%, var(--background)));
+}
+.submit-cta__onair {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--destructive, var(--accent));
+  box-shadow: 0 0 10px var(--destructive, var(--accent));
+  animation: submit-cta-blink 1.4s ease-in-out infinite;
+}
+.submit-cta__button {
+  color: var(--primary-foreground);
+  background: linear-gradient(180deg, color-mix(in oklch, var(--accent) 80%, var(--foreground)) 0%, var(--primary) 55%, color-mix(in oklch, var(--primary) 75%, var(--background)) 100%);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--primary) 50%, var(--background)), 0 0 26px color-mix(in oklch, var(--primary) 60%, transparent), inset 0 1px 0 color-mix(in oklch, var(--foreground) 50%, transparent);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  animation: submit-cta-pulse 2.6s ease-in-out infinite;
+}
+.submit-cta__button:hover { transform: translateY(-1px); }
+.submit-cta__button:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--primary) 50%, var(--background)), 0 0 18px color-mix(in oklch, var(--primary) 50%, transparent);
+}
+.submit-cta__here {
+  display: inline-block;
+  margin: 0 0.15em;
+  padding: 0 0.45em;
+  border-radius: 9999px;
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px var(--accent);
+}
+@keyframes submit-cta-blink { 50% { opacity: 0.25; } }
+@keyframes submit-cta-pulse {
+  50% { box-shadow: 0 5px 0 color-mix(in oklch, var(--primary) 50%, var(--background)), 0 0 42px color-mix(in oklch, var(--accent) 75%, transparent), inset 0 1px 0 color-mix(in oklch, var(--foreground) 50%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .submit-cta__onair, .submit-cta__button { animation: none; }
+}

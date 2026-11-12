@@ -6,6 +6,7 @@ import { ChevronsRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UnlockMusic, hasArtistMusic } from '@/components/unlock-music'
 import { UnlockSocials } from '@/components/unlock-socials'
+import { UnlockSubmitCta } from '@/components/unlock-submit-cta'
 import { WelcomeStage } from '@/components/welcome-stage'
 import { WelcomePopup } from '@/components/welcome-popup'
 import { SOCIAL_LINK_KINDS, type ArtistLinks } from '@/lib/artist-links-types'
@@ -275,6 +276,8 @@ function UnlockGateScreen({
           </header>
 
           <WelcomeStage className="h-72 w-full xl:absolute xl:right-[3vw] xl:bottom-0 xl:h-[86vh] xl:w-[30vw] xl:max-w-[560px]" />
+
+          <UnlockSubmitCta onEnter={() => setPhase('gone')} />
 
           {socials.length > 0 && <UnlockSocials socials={socials} />}
 
