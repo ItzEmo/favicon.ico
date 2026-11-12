@@ -1,8 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import useSWR, { mutate as globalMutate } from "swr"
 import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
+import { CSS } from "@dnd-kit/utilities"
+import {
+  GripVertical,
   ChevronUp,
   ChevronDown,
   Trash2,
@@ -30,6 +49,7 @@ import { type LineId } from "@/lib/lines"
 import {
   removeTrack,
   moveTrack,
+  reorderTrack,
   adminLogout,
   playTrack,
   finishAndPlayNext,
@@ -72,6 +92,49 @@ export function VaultButton({
   )
 }
 
+function SortableTrackRow({
+  id,
+  title,
+  highlight,
+  disabled,
+  children,
+}: {
+  id: string
+  title: string
+  highlight: boolean
+  disabled: boolean
+  children: ReactNode
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
+    useSortable({ id, disabled })
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        "relative flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4",
+        highlight ? "border-primary/60" : "border-border",
+        isDragging && "z-10 border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/40",
+      )}
+    >
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag to reorder ${title}`}
+        className={cn(
+          "flex h-10 w-6 shrink-0 touch-none items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30",
+          isDragging ? "cursor-grabbing" : "cursor-grab",
+        )}
+      >
+        <GripVertical className="size-4" aria-hidden="true" />
+      </button>
+      {children}
+    </li>
+  )
+}
+
 export function AdminQueue({ archivedTrackIds = [] }: { archivedTrackIds?: string[] }) {
   const router = useRouter()
   const [reviewTarget, setReviewTarget] = useState<VaultReviewTarget | null>(null)
@@ -82,14 +145,42 @@ export function AdminQueue({ archivedTrackIds = [] }: { archivedTrackIds?: strin
     setReviewTarget({ trackId: track.trackId, title: track.title, submittedBy: track.submittedBy })
   }
 
+  const reorderingRef = useRef(false)
   const { data, isLoading, mutate } = useSWR<{ nowPlaying: QueueItem | null; tracks: QueueItem[] }>(
     "/api/queue",
     fetcher,
-    { refreshInterval: 5000 },
+    { refreshInterval: 5000, isPaused: () => reorderingRef.current },
   )
   const tracks = data?.tracks ?? []
   const nowPlaying = data?.nowPlaying ?? null
   const [busyId, setBusyId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!data || !over || active.id === over.id) return
+    const from = tracks.findIndex((t) => t.trackId === active.id)
+    const to = tracks.findIndex((t) => t.trackId === over.id)
+    if (from === -1 || to === -1) return
+
+    const trackId = String(active.id)
+    reorderingRef.current = true
+    setBusyId(trackId)
+    await mutate({ ...data, tracks: arrayMove(tracks, from, to) }, { revalidate: false })
+    try {
+      await reorderTrack(trackId, to)
+    } catch (err) {
+      console.log("[v0] reorder error:", (err as Error).message)
+    } finally {
+      reorderingRef.current = false
+      setBusyId(null)
+      await mutate()
+    }
+  }
 
   async function handlePlay(trackId: string) {
     setBusyId(trackId)
@@ -257,18 +348,31 @@ export function AdminQueue({ archivedTrackIds = [] }: { archivedTrackIds?: strin
           </p>
         </div>
       ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis]}
+          onDragStart={() => {
+            reorderingRef.current = true
+          }}
+          onDragCancel={() => {
+            reorderingRef.current = false
+          }}
+          onDragEnd={handleDragEnd}
+        >
+        <SortableContext items={tracks.map((t) => t.trackId)} strategy={verticalListSortingStrategy}>
         <ol className="flex flex-col gap-3">
           {tracks.map((track, index) => {
             const badge = LINE_BADGE[track.line]
             const BadgeIcon = badge.icon
             const busy = busyId === track.trackId
             return (
-              <li
+              <SortableTrackRow
                 key={track.trackId}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4",
-                  track.line === "skipplus" ? "border-primary/60" : "border-border",
-                )}
+                id={track.trackId}
+                title={track.title}
+                highlight={track.line === "skipplus"}
+                disabled={busyId !== null}
               >
                 <div className="flex flex-col items-center gap-1">
                   <button
@@ -367,10 +471,12 @@ export function AdminQueue({ archivedTrackIds = [] }: { archivedTrackIds?: strin
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
                 </button>
-              </li>
+              </SortableTrackRow>
             )
           })}
         </ol>
+        </SortableContext>
+        </DndContext>
       )}
 
       <VaultReviewDialog

@@ -155,6 +155,39 @@ interface PositionRow {
 // boost time, entry time) with its neighbor in the live ordering.
 export async function moveTrack(trackId: string, direction: "up" | "down"): Promise<void> {
   await requireAdmin()
+  await swapWithNeighbor(trackId, direction)
+  revalidatePath("/admin")
+  revalidatePath("/queue")
+}
+
+// Drag-and-drop: move a track to an exact spot in "Up next" by walking it
+// one swap at a time, so every track it passes keeps its relative order.
+export async function reorderTrack(trackId: string, toIndex: number): Promise<void> {
+  await requireAdmin()
+  if (!Number.isInteger(toIndex) || toIndex < 0) return
+  const rows = (await sql`
+    SELECT track_id FROM submissions
+    WHERE status = 'active'
+    ORDER BY
+      CASE line WHEN 'skipplus' THEN 0 WHEN 'skip' THEN 1 WHEN 'boost' THEN 2 ELSE 3 END ASC,
+      boost_cents DESC,
+      boosted_at ASC NULLS LAST,
+      entered_at ASC NULLS LAST,
+      created_at ASC
+  `) as { track_id: string }[]
+  const fromIndex = rows.findIndex((r) => r.track_id === trackId)
+  if (fromIndex === -1) return
+  const target = Math.min(toIndex, rows.length - 1)
+  const steps = Math.abs(target - fromIndex)
+  const direction = target < fromIndex ? "up" : "down"
+  for (let i = 0; i < steps; i++) {
+    await swapWithNeighbor(trackId, direction)
+  }
+  revalidatePath("/admin")
+  revalidatePath("/queue")
+}
+
+async function swapWithNeighbor(trackId: string, direction: "up" | "down"): Promise<void> {
   const rows = (await sql`
     SELECT track_id, line, boost_cents, boosted, boosted_at, entered_at
     FROM submissions
@@ -196,6 +229,4 @@ export async function moveTrack(trackId: string, direction: "up" | "down"): Prom
         boosted_at = ${a.boosted_at}, entered_at = ${a.entered_at}
     WHERE track_id = ${b.track_id}
   `
-  revalidatePath("/admin")
-  revalidatePath("/queue")
 }
