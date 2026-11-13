@@ -8,6 +8,7 @@ import { ProfileForm } from "@/components/profile-form"
 import { auth } from "@/lib/auth"
 import { getLinkSettings, getProfileExtras } from "@/lib/account"
 import { LinkPageEditor } from "@/components/link-page-editor"
+import { LinkReleaseEditor } from "@/components/link-release-editor"
 import { UnlockBackgroundEditor } from "@/components/unlock-background-editor"
 import { isAdmin } from "@/lib/admin-auth"
 import { DEFAULT_UNLOCK_BG, getFeaturedTrackId, getUnlockBackground } from "@/lib/site-settings"
@@ -71,6 +72,9 @@ export default async function ProfilePage() {
         {admin && <UnlockBackgroundEditor current={unlockBg} fallback={DEFAULT_UNLOCK_BG} />}
         {admin && <UnlockSongPicker songs={artistSongs} current={featuredTrackId} />}
         {linkSettings && <LinkPageEditor settings={linkSettings} origin={origin} userId={user.id} />}
+        {linkSettings && (
+          <LinkReleaseEditor release={linkSettings.release} cover={linkSettings.releaseCover} artistName={user.name} />
+        )}
       </section>
     </>
   )
