@@ -1,13 +1,26 @@
+'use client'
+
 import Link from 'next/link'
+import useSWR from 'swr'
 import { ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { QueueStatus } from '@/lib/queue-status'
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json() as Promise<QueueStatus>)
 
 export function UnlockSubmitCta({ onEnter }: { onEnter: () => void }) {
+  const { data } = useSWR('/api/queue/status', fetcher, { refreshInterval: 10000 })
+  const offAir = data ? !data.freeOpen && !data.skipsOpen : false
+
   return (
     <section aria-labelledby="unlock-submit-title" className="submit-cta w-full max-w-sm">
       <div className="submit-cta__frame flex flex-col gap-4 p-5">
-        <p className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/70">
-          <span className="submit-cta__onair" aria-hidden="true" />
-          Now taking submissions
+        <p
+          role="status"
+          className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/70"
+        >
+          <span className={cn('submit-cta__onair', offAir && 'submit-cta__onair--off')} aria-hidden="true" />
+          {offAir ? 'Off Air' : 'Now taking submissions'}
         </p>
 
         <div className="flex flex-col gap-1.5">

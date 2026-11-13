@@ -10,7 +10,10 @@ import { getLinkSettings, getProfileExtras } from "@/lib/account"
 import { LinkPageEditor } from "@/components/link-page-editor"
 import { UnlockBackgroundEditor } from "@/components/unlock-background-editor"
 import { isAdmin } from "@/lib/admin-auth"
-import { DEFAULT_UNLOCK_BG, getUnlockBackground } from "@/lib/site-settings"
+import { DEFAULT_UNLOCK_BG, getFeaturedTrackId, getUnlockBackground } from "@/lib/site-settings"
+import { getArtistLinks } from "@/lib/artist-links"
+import { getArtistSongs, type ArtistSong } from "@/lib/latest-release"
+import { UnlockSongPicker } from "@/components/unlock-song-picker"
 
 export const metadata: Metadata = {
   title: "Edit Profile",
@@ -28,7 +31,15 @@ export default async function ProfilePage() {
     headers(),
     isAdmin(),
   ])
-  const unlockBg = admin ? await getUnlockBackground().catch(() => null) : null
+  const [unlockBg, featuredTrackId, artistSongs] = admin
+    ? await Promise.all([
+        getUnlockBackground().catch(() => null),
+        getFeaturedTrackId().catch(() => null),
+        getArtistLinks()
+          .then((links) => getArtistSongs(links.apple_music))
+          .catch((): ArtistSong[] => []),
+      ])
+    : [null, null, [] as ArtistSong[]]
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000"
   const proto = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")
   const origin = `${proto}://${host}`
@@ -58,6 +69,7 @@ export default async function ProfilePage() {
           musicLinks={musicLinks}
         />
         {admin && <UnlockBackgroundEditor current={unlockBg} fallback={DEFAULT_UNLOCK_BG} />}
+        {admin && <UnlockSongPicker songs={artistSongs} current={featuredTrackId} />}
         {linkSettings && <LinkPageEditor settings={linkSettings} origin={origin} userId={user.id} />}
       </section>
     </>

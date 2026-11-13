@@ -1,106 +1,86 @@
-'use client'
-
-import { useState } from 'react'
-import { ExternalLink } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { appleMusicEmbed, spotifyEmbed, type ArtistLinks } from '@/lib/artist-links-types'
-
-type Service = 'spotify' | 'apple_music'
+import { Play } from 'lucide-react'
+import { BrandIcon, type BrandIconName } from '@/components/brand-icons'
+import { ReleaseCoverPlayer } from '@/components/release-cover-player'
+import type { ArtistLinks } from '@/lib/artist-links-types'
+import type { LatestRelease } from '@/lib/latest-release'
 
 export function hasArtistMusic(links: ArtistLinks) {
   return Boolean(links.spotify || links.apple_music || links.all_music)
 }
 
-export function UnlockMusic({ links }: { links: ArtistLinks }) {
-  const players = [
-    { id: 'spotify' as Service, label: 'Spotify', url: links.spotify, embed: links.spotify ? spotifyEmbed(links.spotify) : null },
-    {
-      id: 'apple_music' as Service,
-      label: 'Apple Music',
-      url: links.apple_music,
-      embed: links.apple_music ? appleMusicEmbed(links.apple_music) : null,
-    },
-  ].filter((p) => p.url && p.embed)
+const PLATFORMS: { kind: BrandIconName; label: string }[] = [
+  { kind: 'spotify', label: 'Spotify' },
+  { kind: 'apple_music', label: 'Apple Music' },
+  { kind: 'youtube', label: 'YouTube' },
+]
 
-  const [active, setActive] = useState<Service | undefined>(players[0]?.id)
-  const current = players.find((p) => p.id === active) ?? players[0]
+export function UnlockMusic({ links, release }: { links: ArtistLinks; release: LatestRelease | null }) {
+  const fullTitle = release?.title ?? 'ItzEmo'
+  const featMatch = fullTitle.match(/^(.*?)\s*[([]\s*(feat\.?|ft\.?|with)\s+([^)\]]+)[)\]]\s*$/i)
+  const title = featMatch ? featMatch[1] : fullTitle
+  const featuring = featMatch?.[3]
+  const artist = release?.artist ?? 'ItzEmo'
+  const titleSize = title.length > 12 ? 'text-3xl' : 'text-4xl'
+  const streamUrl = links.all_music ?? links.spotify ?? release?.url ?? links.apple_music
+  const platforms = PLATFORMS.filter((p) => links[p.kind])
 
   return (
-    <section
-      aria-label="Music by ItzEmo"
-      className={cn('music-card flex w-full max-w-sm flex-col gap-3 rounded-2xl p-3', current && `music-card--${current.id}`)}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <p className="music-card__title text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
-          <span className="music-card__eq" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
-          Music by ItzEmo
-        </p>
-        {players.length > 1 && (
-          <div role="tablist" aria-label="Choose a service" className="flex rounded-full bg-foreground/10 p-0.5">
-            {players.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                role="tab"
-                aria-selected={current?.id === p.id}
-                onClick={() => setActive(p.id)}
-                className={cn(
-                  'rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors focus-visible:ring-2 focus-visible:ring-foreground',
-                  current?.id === p.id ? 'bg-primary text-primary-foreground' : 'text-foreground/70 hover:text-foreground',
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+    <section aria-labelledby="release-title" className="release-card w-full max-w-72">
+      <div className="release-card__frame flex flex-col gap-4 p-4">
+        <ReleaseCoverPlayer title={title} artworkUrl={release?.artworkUrl ?? null} previewUrl={release?.previewUrl ?? null} />
+
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.35em] text-foreground">
+            <span className="submit-cta__onair" aria-hidden="true" />
+            {release?.isNew ? 'Out now' : 'Latest drop'}
+            <span className="h-px flex-1 bg-foreground/40" aria-hidden="true" />
+          </p>
+          <h2
+            id="release-title"
+            className={`submit-cta__chrome ${titleSize} leading-[0.9] font-black uppercase italic tracking-tight text-balance break-words`}
+          >
+            {title}
+          </h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.45em] text-foreground/80">
+            {artist}
+            {featuring && <span className="block pt-1 text-xs tracking-[0.3em] text-foreground/60">feat. {featuring}</span>}
+          </p>
+        </div>
+
+        {streamUrl && (
+          <a
+            href={streamUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="release-card__stream group flex items-center rounded-full py-3 pr-6 pl-5 outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+          >
+            <Play className="size-5 fill-current transition-transform group-hover:scale-110" aria-hidden="true" />
+            <span className="mx-4 h-6 w-px bg-foreground/30" aria-hidden="true" />
+            <span className="flex-1 truncate text-center text-sm font-bold uppercase tracking-[0.25em]">
+              {title.length > 8 ? 'Stream now' : `Stream ${title}`}
+            </span>
+          </a>
         )}
-      </div>
 
-      {current?.embed && (
-        <iframe
-          key={current.id}
-          title={`Emo on ${current.label}`}
-          src={current.embed.src}
-          height={current.embed.height}
-          loading="lazy"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          sandbox={
-            current.id === 'apple_music'
-              ? 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation'
-              : undefined
-          }
-          className="w-full overflow-hidden rounded-xl border-0"
-          style={{ height: current.embed.height }}
-        />
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        {players.map((p) => (
-          <a
-            key={p.id}
-            href={p.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`music-chip music-chip--${p.id} flex items-center gap-1.5 rounded-full border border-foreground/20 px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus-visible:ring-2 focus-visible:ring-foreground`}
-          >
-            {p.label}
-            <ExternalLink className="size-3" aria-hidden="true" />
-          </a>
-        ))}
-        {links.all_music && (
-          <a
-            href={links.all_music}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="music-chip music-chip--all flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-foreground"
-          >
-            All my music
-            <ExternalLink className="size-3" aria-hidden="true" />
-          </a>
+        {platforms.length > 0 && (
+          <ul className="flex items-center gap-1" aria-label="Listen on">
+            {platforms.map((p) => (
+              <li key={p.kind} className="flex items-center gap-1 after:h-6 after:w-px after:bg-foreground/20 after:content-['']">
+                <a
+                  href={links[p.kind]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex size-11 items-center justify-center rounded-full text-foreground/85 outline-none transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-foreground"
+                >
+                  <BrandIcon name={p.kind} className="size-6" />
+                  <span className="sr-only">{p.label}</span>
+                </a>
+              </li>
+            ))}
+            <li className="ml-2 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/70">
+              All platforms
+            </li>
+          </ul>
         )}
       </div>
     </section>

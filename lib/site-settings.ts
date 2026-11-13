@@ -11,6 +11,20 @@ export async function getUnlockBackground(): Promise<string | null> {
   return rows[0]?.value || null
 }
 
+export const FEATURED_TRACK_KEY = "featured_track"
+
+export async function getFeaturedTrackId(): Promise<string | null> {
+  const rows = (await sql`SELECT value FROM site_settings WHERE key = ${FEATURED_TRACK_KEY}`) as { value: string | null }[]
+  return rows[0]?.value || null
+}
+
+export async function setFeaturedTrackId(id: string | null) {
+  await sql`
+    INSERT INTO site_settings (key, value, updated_at) VALUES (${FEATURED_TRACK_KEY}, ${id}, now())
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+  `
+}
+
 export async function setUnlockBackground(url: string | null) {
   await sql`
     INSERT INTO site_settings (key, value, updated_at) VALUES (${UNLOCK_BG_KEY}, ${url}, now())

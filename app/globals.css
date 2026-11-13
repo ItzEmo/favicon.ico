@@ -625,6 +625,36 @@
   animation: social-pill-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   transition: transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 250ms ease, box-shadow 250ms ease;
 }
+.social-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--background) 55%, transparent);
+  border: 1px solid color-mix(in oklab, var(--foreground) 22%, transparent);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  animation: social-pill-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+}
+.social-icon:hover,
+.social-icon:focus-visible {
+  transform: translateY(-3px) scale(1.08) rotate(-6deg);
+  border-color: var(--brand-a);
+  background: color-mix(in oklab, var(--brand-a) 22%, var(--background));
+  box-shadow: -3px 0 14px -2px color-mix(in oklab, var(--brand-a) 70%, transparent), 3px 0 14px -2px color-mix(in oklab, var(--brand-b) 70%, transparent);
+}
+.social-icon:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+.social-icon:active { transform: scale(0.94); }
+.social-icon.social-pill--tiktok:hover svg { animation: social-glitch 450ms steps(2) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .social-icon { animation: none; opacity: 1; }
+  .social-icon:hover, .social-icon:focus-visible { transform: none; }
+  .social-icon.social-pill--tiktok:hover svg { animation: none; }
+}
 .social-pill--tiktok { --brand-a: #25f4ee; --brand-b: #fe2c55; }
 .social-pill--instagram { --brand-a: #fa7e1e; --brand-b: #d62976; }
 .social-pill--youtube { --brand-a: #ff0033; --brand-b: #ff0033; }
@@ -1176,6 +1206,98 @@
   letter-spacing: 0.05em;
   text-shadow: 0 0 8px var(--accent);
 }
+.submit-cta__onair--off {
+  background: color-mix(in oklch, var(--foreground) 35%, transparent);
+  box-shadow: none;
+  animation: none;
+}
+
+.release-card {
+  filter: drop-shadow(0 0 30px color-mix(in oklch, var(--primary) 35%, transparent));
+}
+.release-card__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.875rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
+  background:
+    radial-gradient(120% 70% at 100% 100%, color-mix(in oklch, var(--primary) 30%, transparent), transparent 60%),
+    color-mix(in oklch, var(--background) 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+.release-card__stage { padding-right: 30%; }
+.release-card__cover {
+  z-index: 1;
+  border: 1px solid color-mix(in oklch, var(--foreground) 35%, transparent);
+  box-shadow: 0 18px 30px -12px var(--background), 0 0 0 4px color-mix(in oklch, var(--background) 60%, transparent);
+  transform: rotate(-2deg);
+}
+.release-card__vinyl {
+  position: absolute;
+  top: 50%;
+  left: 24%;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(circle, transparent 0 30%, color-mix(in oklch, var(--foreground) 7%, transparent) 30.5% 31%, transparent 31.5%),
+    repeating-radial-gradient(circle, var(--background) 0 2px, color-mix(in oklch, var(--background) 80%, var(--foreground)) 2px 3px);
+  box-shadow: 10px 0 24px -4px color-mix(in oklch, var(--accent) 70%, transparent), inset 0 0 0 2px color-mix(in oklch, var(--accent) 55%, transparent);
+  animation: release-vinyl-out 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 300ms both, release-vinyl-spin 6s linear 1.2s infinite;
+}
+.release-card__label {
+  position: absolute;
+  inset: 34%;
+  border-radius: 9999px;
+  background: var(--primary) center / cover;
+  box-shadow: 0 0 0 2px var(--background);
+}
+.release-card__label::after {
+  content: '';
+  position: absolute;
+  inset: 44%;
+  border-radius: 9999px;
+  background: var(--background);
+}
+.release-card__stream {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--background) 70%, transparent);
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 0 1.5px color-mix(in oklch, var(--foreground) 70%, transparent),
+    8px 0 22px -6px var(--accent),
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 20%, transparent);
+  transition: box-shadow 200ms ease, transform 150ms ease;
+}
+.release-card__stream:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1.5px var(--accent),
+    0 0 30px -4px var(--accent),
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 20%, transparent);
+}
+.release-card__cover { cursor: pointer; transition: transform 250ms ease; }
+.release-card__cover:hover { transform: rotate(0deg) scale(1.02); }
+.release-card__play { opacity: 0.85; transition: opacity 200ms ease; }
+.release-card__cover:hover .release-card__play { opacity: 1; }
+.release-card__stage[data-playing] .release-card__play { opacity: 0; }
+.release-card__stage[data-playing] .release-card__cover:hover .release-card__play,
+.release-card__stage[data-playing] .release-card__cover:focus-visible .release-card__play { opacity: 1; }
+.release-card__stage[data-playing] .release-card__vinyl { animation-duration: 900ms, 1.8s; }
+@keyframes release-vinyl-out {
+  from { left: 4%; opacity: 0; }
+  to { left: 24%; opacity: 1; }
+}
+@keyframes release-vinyl-spin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .release-card__vinyl { animation: none; }
+}
+
 @keyframes submit-cta-blink { 50% { opacity: 0.25; } }
 @keyframes submit-cta-pulse {
   50% { box-shadow: 0 5px 0 color-mix(in oklch, var(--primary) 50%, var(--background)), 0 0 42px color-mix(in oklch, var(--accent) 75%, transparent), inset 0 1px 0 color-mix(in oklch, var(--foreground) 50%, transparent); }

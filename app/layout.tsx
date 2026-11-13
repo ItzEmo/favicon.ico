@@ -12,7 +12,9 @@ import { DjMiniPlayer } from '@/components/dj-mini-player'
 import { QueueAlert } from '@/components/queue-alert'
 import { QueueOffBanner } from '@/components/queue-off-banner'
 import { getArtistLinks } from '@/lib/artist-links'
-import { DEFAULT_UNLOCK_BG, getUnlockBackground } from '@/lib/site-settings'
+import type { ArtistLinks } from '@/lib/artist-links-types'
+import { getFeaturedRelease } from '@/lib/latest-release'
+import { DEFAULT_UNLOCK_BG, getFeaturedTrackId, getUnlockBackground } from '@/lib/site-settings'
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
@@ -70,10 +72,12 @@ export default async function RootLayout({
   }
 
   const admin = await isAdmin()
-  const [musicLinks, unlockBg] = await Promise.all([
-    getArtistLinks().catch(() => ({})),
+  const [musicLinks, unlockBg, featuredTrackId] = await Promise.all([
+    getArtistLinks().catch((): ArtistLinks => ({})),
     getUnlockBackground().catch(() => null),
+    getFeaturedTrackId().catch(() => null),
   ])
+  const latestRelease = await getFeaturedRelease(musicLinks.apple_music, featuredTrackId).catch(() => null)
   return (
     <html
       lang="en"
@@ -100,7 +104,7 @@ export default async function RootLayout({
         )}
         <HoverMascot />
         <QueueAlert />
-        <UnlockGate links={musicLinks} backgroundUrl={unlockBg ?? DEFAULT_UNLOCK_BG} />
+        <UnlockGate links={musicLinks} release={latestRelease} backgroundUrl={unlockBg ?? DEFAULT_UNLOCK_BG} />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
