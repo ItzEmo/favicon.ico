@@ -1218,7 +1218,7 @@
 .release-card__frame {
   position: relative;
   overflow: hidden;
-  border-radius: 1.25rem;
+  border-radius: 1.875rem;
   border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
   background:
     radial-gradient(120% 70% at 100% 100%, color-mix(in oklch, var(--primary) 30%, transparent), transparent 60%),
