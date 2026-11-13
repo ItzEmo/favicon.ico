@@ -2,6 +2,7 @@ import "server-only"
 
 import { sql } from "@/lib/db"
 import { coerceMusicLinks, type MusicLink } from "@/lib/music-links"
+import { coerceReleaseSetup, type ReleaseSetup } from "@/lib/release-setup"
 import {
   coerceCustomLinks,
   isLinkAccent,
@@ -184,9 +185,13 @@ export interface LinkSettings {
   headerStyle: LinkHeaderStyle
   songUrl: string | null
   songTitle: string | null
+  release: ReleaseSetup | null
+  releaseCover: string | null
 }
 
 interface LinkRow {
+  link_release: unknown
+  link_release_cover: string | null
   link_song_url: string | null
   link_song_title: string | null
   link_header: string
@@ -227,6 +232,8 @@ function toLinkSettings(row: LinkRow): LinkSettings {
         : "avatar",
     songUrl: row.link_song_url,
     songTitle: row.link_song_title,
+    release: coerceReleaseSetup(row.link_release),
+    releaseCover: row.link_release_cover,
   }
 }
 
@@ -234,7 +241,7 @@ export async function getLinkSettings(userId: string): Promise<LinkSettings | nu
   const rows = (await sql`
     SELECT handle, link_bio, link_theme, link_accent, link_effect, link_bg_image,
            link_custom_links, link_hide_submissions, link_hide_avg, link_hide_rank, link_header,
-           link_song_url, link_song_title
+           link_song_url, link_song_title, link_release, link_release_cover
     FROM "user" WHERE id = ${userId} LIMIT 1
   `) as LinkRow[]
   return rows[0] ? toLinkSettings(rows[0]) : null

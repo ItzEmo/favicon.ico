@@ -2,6 +2,7 @@ import "server-only"
 
 import type { BrandIconName } from "@/components/brand-icons"
 import { musicLinkLabel, musicLinkSource, type MusicLink } from "@/lib/music-links"
+import { RELEASE_EYEBROWS, RELEASE_PLATFORMS, RELEASE_PLATFORM_KEYS, type ReleaseSetup } from "@/lib/release-setup"
 
 export type ResolvedMusicLink = {
   url: string
@@ -97,6 +98,43 @@ const PLATFORM: Partial<Record<ReturnType<typeof musicLinkSource>, BrandIconName
   spotify: "spotify",
   apple: "apple_music",
   youtube: "youtube",
+}
+
+/** Builds the card for a release the artist set up themselves; their uploads win over looked-up metadata. */
+export async function resolveReleaseSetup(
+  setup: ReleaseSetup,
+  coverUrl: string | null,
+  ownerName: string,
+  fallbackPreview: string | null,
+) {
+  const primaryUrl = setup.links.apple ?? setup.links.spotify ?? setup.links.youtube
+  let artworkUrl: string | null = null
+  let previewUrl: string | null = null
+  if (primaryUrl) {
+    const resolved = await resolveMusicLink({ title: setup.title, url: primaryUrl }, ownerName)
+    artworkUrl = resolved.artworkUrl
+    previewUrl = resolved.previewUrl
+  } else {
+    const match = await findItunesPreview(setup.title, ownerName)
+    artworkUrl = bigArtwork(match?.artworkUrl100) ?? null
+    previewUrl = match?.previewUrl ?? null
+  }
+
+  const platforms = RELEASE_PLATFORM_KEYS.flatMap((key) => {
+    const url = setup.links[key]
+    return url ? [{ kind: RELEASE_PLATFORMS[key].icon, label: RELEASE_PLATFORMS[key].label, url }] : []
+  })
+
+  return {
+    title: setup.title,
+    artist: ownerName,
+    eyebrow: RELEASE_EYEBROWS[setup.eyebrow],
+    artworkUrl: coverUrl ?? artworkUrl,
+    previewUrl: previewUrl ?? fallbackPreview,
+    streamUrl: primaryUrl,
+    platforms,
+    urls: new Set(Object.values(setup.links)),
+  }
 }
 
 export async function resolveMusicLink(link: MusicLink, ownerName: string): Promise<ResolvedMusicLink> {

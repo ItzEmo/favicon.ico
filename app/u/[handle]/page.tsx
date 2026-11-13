@@ -8,7 +8,7 @@ import { ArrowUpRight } from "lucide-react"
 import { getLinkPage } from "@/lib/account"
 import { discoFont, glassFont, travelersFont } from "@/lib/glass-font"
 import { LINK_ACCENTS, LINK_BACKGROUNDS } from "@/lib/link-page"
-import { resolveMusicLink } from "@/lib/music-link-release"
+import { resolveMusicLink, resolveReleaseSetup } from "@/lib/music-link-release"
 import { ReleaseCard } from "@/components/release-card"
 import { GlassFilterDefs } from "@/components/glass-filter-defs"
 import { LinkEffectBackdrop } from "@/components/link-effect-backdrop"
@@ -60,7 +60,11 @@ export default async function LinkPage({ params }: Props) {
   if (!page) notFound()
 
   const { link, stats } = page
-  const releases = await Promise.all(page.musicLinks.map((item) => resolveMusicLink(item, page.name)))
+  const [featured, allReleases] = await Promise.all([
+    link.release ? resolveReleaseSetup(link.release, link.releaseCover, page.name, link.songUrl) : null,
+    Promise.all(page.musicLinks.map((item) => resolveMusicLink(item, page.name))),
+  ])
+  const releases = featured ? allReleases.filter((r) => !featured.urls.has(r.url)) : allReleases
   const accent = LINK_ACCENTS[link.accent]
   const backgroundSrc =
     link.background === "custom" && link.backgroundImage
@@ -157,6 +161,19 @@ export default async function LinkPage({ params }: Props) {
             </dl>
           )}
 
+          {featured && (
+            <ReleaseCard
+              headingId="featured-release-title"
+              eyebrow={featured.eyebrow}
+              title={featured.title}
+              artist={featured.artist}
+              artworkUrl={featured.artworkUrl}
+              previewUrl={featured.previewUrl}
+              streamUrl={featured.streamUrl}
+              platforms={featured.platforms}
+            />
+          )}
+
           <nav aria-label={`${page.name}'s links`} className="flex w-full flex-col gap-3">
             {page.instagram && (
               <a
@@ -192,7 +209,7 @@ export default async function LinkPage({ params }: Props) {
               <ReleaseCard
                 key={release.url}
                 headingId={`release-title-${index}`}
-                eyebrow={release.isNew ? "Out now" : index === 0 ? "Latest drop" : "Also out"}
+                eyebrow={release.isNew ? "Out now" : index === 0 && !featured ? "Latest drop" : "Also out"}
                 title={release.title}
                 artist={release.artist}
                 artworkUrl={release.artworkUrl}
@@ -202,7 +219,7 @@ export default async function LinkPage({ params }: Props) {
               />
             ))}
 
-            {!page.instagram && page.musicLinks.length === 0 && link.customLinks.length === 0 && (
+            {!featured && !page.instagram && page.musicLinks.length === 0 && link.customLinks.length === 0 && (
               <p className={`px-6 py-8 text-center text-sm text-foreground/70 ${glass}`}>
                 {page.name} hasn&apos;t added any links yet.
               </p>
