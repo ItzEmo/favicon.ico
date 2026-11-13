@@ -278,13 +278,12 @@ function UnlockGateScreen({
             <p className="max-w-xs text-sm leading-relaxed text-foreground/85 text-pretty [text-shadow:0_1px_8px_var(--background)]">
               Live music reviews. Submit your track, battle in the Arena, get heard.
             </p>
+            {socials.length > 0 && <UnlockSocials socials={socials} />}
           </header>
 
           <WelcomeStage className="h-72 w-full xl:absolute xl:right-[3vw] xl:bottom-0 xl:h-[86vh] xl:w-[30vw] xl:max-w-[560px]" />
 
           <UnlockSubmitCta onEnter={() => setPhase('gone')} />
-
-          {socials.length > 0 && <UnlockSocials socials={socials} />}
 
           {hasArtistMusic(links) && <UnlockMusic links={links} release={release} />}
 

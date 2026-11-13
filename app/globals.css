@@ -625,6 +625,36 @@
   animation: social-pill-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   transition: transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 250ms ease, box-shadow 250ms ease;
 }
+.social-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--background) 55%, transparent);
+  border: 1px solid color-mix(in oklab, var(--foreground) 22%, transparent);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  animation: social-pill-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+}
+.social-icon:hover,
+.social-icon:focus-visible {
+  transform: translateY(-3px) scale(1.08) rotate(-6deg);
+  border-color: var(--brand-a);
+  background: color-mix(in oklab, var(--brand-a) 22%, var(--background));
+  box-shadow: -3px 0 14px -2px color-mix(in oklab, var(--brand-a) 70%, transparent), 3px 0 14px -2px color-mix(in oklab, var(--brand-b) 70%, transparent);
+}
+.social-icon:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+.social-icon:active { transform: scale(0.94); }
+.social-icon.social-pill--tiktok:hover svg { animation: social-glitch 450ms steps(2) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .social-icon { animation: none; opacity: 1; }
+  .social-icon:hover, .social-icon:focus-visible { transform: none; }
+  .social-icon.social-pill--tiktok:hover svg { animation: none; }
+}
 .social-pill--tiktok { --brand-a: #25f4ee; --brand-b: #fe2c55; }
 .social-pill--instagram { --brand-a: #fa7e1e; --brand-b: #d62976; }
 .social-pill--youtube { --brand-a: #ff0033; --brand-b: #ff0033; }
