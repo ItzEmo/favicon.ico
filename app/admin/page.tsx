@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { headers } from "next/headers"
-import { ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay, Vote, Dices } from "lucide-react"
+import { AdminSchedule } from "@/components/admin-schedule"
+import { getSchedule } from "@/lib/schedule"
+import { CalendarDays, ShieldCheck, ListMusic, Swords, Newspaper, Archive, Disc3, History, Users, UserRound, SlidersHorizontal, MonitorPlay, Vote, Dices } from "lucide-react"
 import { AdminSkipSpin } from "@/components/admin-skip-spin"
 import { getEligibleEntrants, getWinners } from "@/lib/skip-spin"
 import { AdminOverlayLink } from "@/components/admin-overlay-link"
@@ -41,6 +43,7 @@ export const metadata = {
 const SECTIONS = [
   { id: "queue", label: "Queue", icon: ListMusic },
   { id: "overlay", label: "Overlay", icon: MonitorPlay },
+  { id: "schedule", label: "Schedule", icon: CalendarDays },
   { id: "history", label: "History", icon: History },
   { id: "vault", label: "Vault", icon: Archive },
   { id: "mix-orders", label: "Mix Orders", icon: SlidersHorizontal },
@@ -135,6 +138,17 @@ async function SectionContent({ section }: { section: SectionId }) {
         </>
       )
     }
+    case "schedule":
+      return (
+        <>
+          <SectionHeading
+            icon={CalendarDays}
+            title="Live Schedule"
+            note="Set your weekly lineup and change specific dates. It shows on the public Schedule page as a full calendar."
+          />
+          <AdminSchedule schedule={await getSchedule()} />
+        </>
+      )
     case "history":
       return (
         <>

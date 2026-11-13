@@ -12,6 +12,7 @@ import { useSession } from "@/lib/auth-client"
 export const NAV_ITEMS = [
   { label: "HOME", href: "/" },
   { label: "QUEUE", href: "/queue" },
+  { label: "SCHEDULE", href: "/schedule" },
   { label: "SUBMIT", href: "/submit" },
   { label: "VAULT", href: "/vault" },
   { label: "TOOLS", href: "/tools" },
