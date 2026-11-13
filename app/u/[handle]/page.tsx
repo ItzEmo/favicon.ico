@@ -8,8 +8,8 @@ import { ArrowUpRight } from "lucide-react"
 import { getLinkPage } from "@/lib/account"
 import { discoFont, glassFont, travelersFont } from "@/lib/glass-font"
 import { LINK_ACCENTS, LINK_BACKGROUNDS } from "@/lib/link-page"
-import { musicLinkLabel } from "@/lib/music-links"
-import { appleMusicEmbed, spotifyEmbed } from "@/lib/artist-links-types"
+import { resolveMusicLink } from "@/lib/music-link-release"
+import { ReleaseCard } from "@/components/release-card"
 import { GlassFilterDefs } from "@/components/glass-filter-defs"
 import { LinkEffectBackdrop } from "@/components/link-effect-backdrop"
 import { ShareLinkButton } from "@/components/share-link-button"
@@ -60,6 +60,7 @@ export default async function LinkPage({ params }: Props) {
   if (!page) notFound()
 
   const { link, stats } = page
+  const releases = await Promise.all(page.musicLinks.map((item) => resolveMusicLink(item, page.name)))
   const accent = LINK_ACCENTS[link.accent]
   const backgroundSrc =
     link.background === "custom" && link.backgroundImage
@@ -187,36 +188,19 @@ export default async function LinkPage({ params }: Props) {
               </a>
             ))}
 
-            {page.musicLinks.map((item) => {
-              const embed = spotifyEmbed(item.url) ?? appleMusicEmbed(item.url)
-              return (
-                <div key={item.url} className={`flex flex-col gap-3 p-3 ${glass}`}>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center justify-between gap-3 px-2"
-                  >
-                    <span className="flex min-w-0 flex-col">
-                      <span className="truncate font-semibold text-foreground group-hover:text-primary">{item.title}</span>
-                      <span className="text-xs text-foreground/60">{musicLinkLabel(item.url)}</span>
-                    </span>
-                    <ArrowUpRight className="size-5 shrink-0 text-foreground/60 group-hover:text-primary" aria-hidden="true" />
-                    <span className="sr-only">(opens in a new tab)</span>
-                  </a>
-                  {embed && (
-                    <iframe
-                      src={embed.src}
-                      height={embed.height}
-                      title={`${item.title} player`}
-                      loading="lazy"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      className="w-full rounded-xl border-0"
-                    />
-                  )}
-                </div>
-              )
-            })}
+            {releases.map((release, index) => (
+              <ReleaseCard
+                key={release.url}
+                headingId={`release-title-${index}`}
+                eyebrow={release.isNew ? "Out now" : index === 0 ? "Latest drop" : "Also out"}
+                title={release.title}
+                artist={release.artist}
+                artworkUrl={release.artworkUrl}
+                previewUrl={release.previewUrl}
+                streamUrl={release.url}
+                platforms={release.platform ? [{ ...release.platform, url: release.url }] : []}
+              />
+            ))}
 
             {!page.instagram && page.musicLinks.length === 0 && link.customLinks.length === 0 && (
               <p className={`px-6 py-8 text-center text-sm text-foreground/70 ${glass}`}>
