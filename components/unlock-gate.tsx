@@ -10,6 +10,7 @@ import { UnlockSubmitCta } from '@/components/unlock-submit-cta'
 import { WelcomeStage } from '@/components/welcome-stage'
 import { WelcomePopup } from '@/components/welcome-popup'
 import { SOCIAL_LINK_KINDS, type ArtistLinks } from '@/lib/artist-links-types'
+import type { LatestRelease } from '@/lib/latest-release'
 
 const UNLOCK_THRESHOLD = 0.85
 const FADE_MS = 1100
@@ -32,9 +33,11 @@ const RAIN_DROPS = Array.from({ length: 70 }, (_, i) => ({
 
 export function UnlockGate({
   links = {},
+  release = null,
   backgroundUrl = "/images/unlock-rain-bg.webp",
 }: {
   links?: ArtistLinks
+  release?: LatestRelease | null
   backgroundUrl?: string
 }) {
   const pathname = usePathname()
@@ -48,7 +51,7 @@ export function UnlockGate({
 
   return (
     <>
-      {gated && <UnlockGateScreen links={links} backgroundUrl={backgroundUrl} onUnlocked={handleUnlocked} />}
+      {gated && <UnlockGateScreen links={links} release={release} backgroundUrl={backgroundUrl} onUnlocked={handleUnlocked} />}
       {showWelcome && <WelcomePopup onClose={closeWelcome} />}
     </>
   )
@@ -56,10 +59,12 @@ export function UnlockGate({
 
 function UnlockGateScreen({
   links,
+  release,
   backgroundUrl,
   onUnlocked,
 }: {
   links: ArtistLinks
+  release: LatestRelease | null
   backgroundUrl: string
   onUnlocked: () => void
 }) {
@@ -281,7 +286,7 @@ function UnlockGateScreen({
 
           {socials.length > 0 && <UnlockSocials socials={socials} />}
 
-          {hasArtistMusic(links) && <UnlockMusic links={links} />}
+          {hasArtistMusic(links) && <UnlockMusic links={links} release={release} />}
 
           <div className="mt-auto flex w-full flex-col items-center gap-4 pt-4">
           <div
