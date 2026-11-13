@@ -1,5 +1,6 @@
 import { Play } from 'lucide-react'
 import { BrandIcon, type BrandIconName } from '@/components/brand-icons'
+import { ReleaseCoverPlayer } from '@/components/release-cover-player'
 import type { ArtistLinks } from '@/lib/artist-links-types'
 import type { LatestRelease } from '@/lib/latest-release'
 
@@ -19,34 +20,14 @@ export function UnlockMusic({ links, release }: { links: ArtistLinks; release: L
   const title = featMatch ? featMatch[1] : fullTitle
   const featuring = featMatch?.[3]
   const artist = release?.artist ?? 'ItzEmo'
-  const titleSize = title.length > 12 ? 'text-4xl' : 'text-5xl'
+  const titleSize = title.length > 12 ? 'text-3xl' : 'text-4xl'
   const streamUrl = links.all_music ?? links.spotify ?? release?.url ?? links.apple_music
   const platforms = PLATFORMS.filter((p) => links[p.kind])
 
   return (
-    <section aria-labelledby="release-title" className="release-card w-full max-w-sm">
-      <div className="release-card__frame flex flex-col gap-5 p-5">
-        <div className="release-card__stage relative flex items-center">
-          <div className="release-card__vinyl" aria-hidden="true">
-            <span className="release-card__label" style={release ? { backgroundImage: `url(${release.artworkUrl})` } : undefined} />
-          </div>
-          <div className="release-card__cover relative aspect-square w-[62%] overflow-hidden rounded-lg">
-            {release ? (
-              <img
-                src={release.artworkUrl}
-                alt={`${title} cover art`}
-                width={600}
-                height={600}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-background/60 font-black uppercase italic text-foreground/70">
-                Emo&apos;s Radio
-              </div>
-            )}
-          </div>
-        </div>
+    <section aria-labelledby="release-title" className="release-card w-full max-w-72">
+      <div className="release-card__frame flex flex-col gap-4 p-4">
+        <ReleaseCoverPlayer title={title} artworkUrl={release?.artworkUrl ?? null} previewUrl={release?.previewUrl ?? null} />
 
         <div className="flex flex-col gap-2">
           <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.35em] text-foreground">
@@ -76,7 +57,7 @@ export function UnlockMusic({ links, release }: { links: ArtistLinks; release: L
             <Play className="size-5 fill-current transition-transform group-hover:scale-110" aria-hidden="true" />
             <span className="mx-4 h-6 w-px bg-foreground/30" aria-hidden="true" />
             <span className="flex-1 truncate text-center text-sm font-bold uppercase tracking-[0.25em]">
-              {title.length > 12 ? 'Stream now' : `Stream ${title}`}
+              {title.length > 8 ? 'Stream now' : `Stream ${title}`}
             </span>
           </a>
         )}

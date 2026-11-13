@@ -1248,6 +1248,14 @@
     0 0 30px -4px var(--accent),
     inset 0 1px 0 color-mix(in oklch, var(--foreground) 20%, transparent);
 }
+.release-card__cover { cursor: pointer; transition: transform 250ms ease; }
+.release-card__cover:hover { transform: rotate(0deg) scale(1.02); }
+.release-card__play { opacity: 0.85; transition: opacity 200ms ease; }
+.release-card__cover:hover .release-card__play { opacity: 1; }
+.release-card__stage[data-playing] .release-card__play { opacity: 0; }
+.release-card__stage[data-playing] .release-card__cover:hover .release-card__play,
+.release-card__stage[data-playing] .release-card__cover:focus-visible .release-card__play { opacity: 1; }
+.release-card__stage[data-playing] .release-card__vinyl { animation-duration: 900ms, 1.8s; }
 @keyframes release-vinyl-out {
   from { left: 4%; opacity: 0; }
   to { left: 24%; opacity: 1; }
