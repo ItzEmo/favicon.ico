@@ -34,7 +34,7 @@ export function ReleaseCoverPlayer({
   )
 
   return (
-    <div className="release-card__stage relative flex items-center" data-playing={playing || undefined}>
+    <div className="release-card__stage relative flex items-center text-[20px]" data-playing={playing || undefined}>
       <div className="release-card__vinyl" aria-hidden="true">
         <span className="release-card__label" style={artworkUrl ? { backgroundImage: `url(${artworkUrl})` } : undefined} />
       </div>
