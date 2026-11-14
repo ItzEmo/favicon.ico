@@ -120,11 +120,11 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.16 0.04 305);
+  --background: oklch(0.12 0.035 300);
   --foreground: oklch(0.96 0.01 310);
-  --card: oklch(0.21 0.05 305);
+  --card: oklch(0.17 0.05 302);
   --card-foreground: oklch(0.96 0.01 310);
-  --popover: oklch(0.21 0.05 305);
+  --popover: oklch(0.17 0.05 302);
   --popover-foreground: oklch(0.96 0.01 310);
   --primary: oklch(0.62 0.21 300);
   --primary-foreground: oklch(0.98 0.01 310);
@@ -156,11 +156,11 @@
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
     color-scheme: dark;
-    --background: oklch(0.16 0.04 305);
+    --background: oklch(0.12 0.035 300);
     --foreground: oklch(0.96 0.01 310);
-    --card: oklch(0.21 0.05 305);
+    --card: oklch(0.17 0.05 302);
     --card-foreground: oklch(0.96 0.01 310);
-    --popover: oklch(0.21 0.05 305);
+    --popover: oklch(0.17 0.05 302);
     --popover-foreground: oklch(0.96 0.01 310);
     --primary: oklch(0.62 0.21 300);
     --primary-foreground: oklch(0.98 0.01 310);
@@ -199,6 +199,48 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Site-wide backdrop echoing the "Built for the community" GIF: near-black violet with electric neon rails */
+.electric-surface {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(60% 45% at 50% 0%, oklch(0.42 0.2 300 / 0.28), transparent 70%),
+    radial-gradient(35% 30% at 0% 55%, oklch(0.48 0.22 292 / 0.14), transparent 70%),
+    radial-gradient(35% 30% at 100% 80%, oklch(0.48 0.22 312 / 0.14), transparent 70%);
+  background-attachment: fixed;
+}
+
+.electric-surface::before,
+.electric-surface::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Looping purple smoke GIF; screen blend lets its black backdrop melt into the page color */
+.electric-surface::before {
+  background-image: url("/images/purple-smoke-bg.gif");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* Soft scrim keeps body copy readable over the brightest smoke */
+.electric-surface::after {
+  background-image: radial-gradient(70% 55% at 50% 45%, oklch(0.12 0.03 295 / 0.45), transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electric-surface::before {
+    opacity: 0.55;
   }
 }
 
