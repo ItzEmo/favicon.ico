@@ -86,7 +86,7 @@ export default async function RootLayout({
       <body className="font-sans antialiased">
         {admin ? (
           <DjAudioProvider>
-            <div id="top" className="flex min-h-screen flex-col bg-background">
+            <div id="top" className="electric-surface flex min-h-screen flex-col">
               <SiteNav isAdmin={admin} />
               <QueueOffBanner />
               <main className="flex-1">{children}</main>
@@ -95,7 +95,7 @@ export default async function RootLayout({
             <DjMiniPlayer />
           </DjAudioProvider>
         ) : (
-          <div id="top" className="flex min-h-screen flex-col bg-background">
+          <div id="top" className="electric-surface flex min-h-screen flex-col">
             <SiteNav isAdmin={admin} />
             <QueueOffBanner />
             <main className="flex-1">{children}</main>

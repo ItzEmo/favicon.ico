@@ -12,7 +12,7 @@ const FEATURES = [
 
 export function HomeHero() {
   return (
-    <section className="relative flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center overflow-hidden bg-background px-4 py-14 text-center">
+    <section className="relative flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center overflow-hidden px-4 py-14 text-center">
       {/* grid + glow backdrop */}
       <div
         aria-hidden="true"
