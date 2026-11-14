@@ -44,21 +44,17 @@ export function HomeHero() {
         {/* Title */}
         <h1 className="flex w-full justify-center">
           <span className="sr-only">Built for the community</span>
-          {/* mix-blend-screen drops the GIF's near-black backdrop into the hero background */}
-          <Image
-            src="/images/built-for-the-community.gif"
-            alt=""
-            aria-hidden="true"
-            width={550}
-            height={309}
-            unoptimized
-            priority
-            className="pointer-events-none -my-6 h-auto w-[min(92vw,560px)] select-none mix-blend-screen sm:-my-10"
-            style={{
-              maskImage: "radial-gradient(ellipse 62% 48% at 50% 50%, black 55%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(ellipse 62% 48% at 50% 50%, black 55%, transparent 100%)",
-            }}
-          />
+          {/* Cropped to the lettering; mix-blend-screen drops the pure-black backdrop into the page */}
+          <span aria-hidden="true" className="relative block aspect-[1672/300] w-[min(92vw,600px)] overflow-hidden">
+            <Image
+              src="/images/built-for-the-community.png"
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 652px) 92vw, 600px"
+              className="pointer-events-none select-none object-cover mix-blend-screen"
+            />
+          </span>
         </h1>
 
         {/* Live badge */}
