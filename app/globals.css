@@ -223,14 +223,15 @@
   pointer-events: none;
 }
 
-/* Looping purple smoke GIF; screen blend lets its black backdrop melt into the page color */
+/* Looping purple smoke (crossfade-interpolated from the 9-frame GIF to ~33fps); screen blend melts its black backdrop into the page */
 .electric-surface::before {
-  background-image: url("/images/purple-smoke-bg.gif");
+  background-image: url("/images/purple-smoke-bg.webp");
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.9;
+  opacity: 0.55;
+  will-change: opacity;
 }
 
 /* Soft scrim keeps body copy readable over the brightest smoke */
@@ -240,7 +241,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .electric-surface::before {
-    opacity: 0.55;
+    opacity: 0.35;
   }
 }
 
