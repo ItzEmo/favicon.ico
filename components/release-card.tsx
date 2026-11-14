@@ -31,11 +31,11 @@ export function ReleaseCard({
   return (
     <section aria-labelledby={headingId} className="release-card w-full">
       <div className="release-card__frame flex items-center gap-4 p-4">
-        <div className="w-40 shrink-0 sm:w-52">
+        <div className="relative z-0 -mr-6 w-40 shrink-0 sm:-mr-8 sm:w-52">
           <ReleaseCoverPlayer title={title} artworkUrl={artworkUrl} previewUrl={previewUrl} />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex flex-col gap-1.5">
             <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.35em] text-foreground">
               <span className="submit-cta__onair" aria-hidden="true" />
