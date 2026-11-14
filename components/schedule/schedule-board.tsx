@@ -48,7 +48,7 @@ export function ScheduleBoard({ schedule, today }: { schedule: Schedule; today: 
       <div className="relative mx-auto flex w-full max-w-5xl flex-col items-center gap-8 px-4 pb-24 pt-10 sm:px-6 lg:px-10 lg:pb-64">
         <header className="flex flex-col items-center gap-3 text-center">
           <Image
-            src="/emos-radio-logo.png"
+            src="/emo-neon-logo.png"
             alt="Emo's Radio"
             width={320}
             height={240}
