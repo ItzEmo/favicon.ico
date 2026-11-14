@@ -54,6 +54,10 @@ export function HomeHero() {
             unoptimized
             priority
             className="pointer-events-none -my-6 h-auto w-[min(92vw,560px)] select-none mix-blend-screen sm:-my-10"
+            style={{
+              maskImage: "radial-gradient(ellipse 62% 48% at 50% 50%, black 55%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse 62% 48% at 50% 50%, black 55%, transparent 100%)",
+            }}
           />
         </h1>
 
