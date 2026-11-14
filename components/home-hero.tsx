@@ -4,14 +4,6 @@ import { Zap, UserPlus, Users, BadgeCheck, Tv, ChevronDown } from "lucide-react"
 import { LiveNowBadge } from "@/components/live-now-badge"
 import { SessionSubmissionsCounter } from "@/components/session-submissions-counter"
 
-// "BUILT FOR THE COMMUNITY" rendered with alternating neon tones for a flickering-sign feel.
-const TITLE_WORDS: { text: string; tones: string[] }[] = [
-  { text: "BUILT", tones: ["text-purple-400", "text-violet-500", "text-fuchsia-300", "text-violet-500", "text-fuchsia-500"] },
-  { text: "FOR", tones: ["text-fuchsia-300", "text-purple-400", "text-violet-500"] },
-  { text: "THE", tones: ["text-violet-500", "text-fuchsia-300", "text-purple-400"] },
-  { text: "COMMUNITY", tones: ["text-fuchsia-500", "text-violet-500", "text-fuchsia-300", "text-purple-400", "text-violet-500", "text-fuchsia-300", "text-purple-400", "text-fuchsia-500", "text-violet-500"] },
-]
-
 const FEATURES = [
   { icon: Users, label: "Artists from every genre" },
   { icon: BadgeCheck, label: "The truth. Every time." },
@@ -50,16 +42,19 @@ export function HomeHero() {
         />
 
         {/* Title */}
-        <h1 className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-2xl font-black uppercase tracking-[0.35em] sm:text-4xl">
-          {TITLE_WORDS.map((word) => (
-            <span key={word.text} className="inline-flex">
-              {word.text.split("").map((ch, i) => (
-                <span key={i} className={word.tones[i % word.tones.length]}>
-                  {ch}
-                </span>
-              ))}
-            </span>
-          ))}
+        <h1 className="flex w-full justify-center">
+          <span className="sr-only">Built for the community</span>
+          {/* mix-blend-screen drops the GIF's near-black backdrop into the hero background */}
+          <Image
+            src="/images/built-for-the-community.gif"
+            alt=""
+            aria-hidden="true"
+            width={550}
+            height={309}
+            unoptimized
+            priority
+            className="pointer-events-none -my-6 h-auto w-[min(92vw,560px)] select-none mix-blend-screen sm:-my-10"
+          />
         </h1>
 
         {/* Live badge */}
