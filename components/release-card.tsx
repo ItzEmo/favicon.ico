@@ -31,7 +31,7 @@ export function ReleaseCard({
   return (
     <section aria-labelledby={headingId} className="release-card w-full">
       <div className="release-card__frame flex items-center gap-4 p-4">
-        <div className="w-32 shrink-0 sm:w-40">
+        <div className="w-40 shrink-0 sm:w-52">
           <ReleaseCoverPlayer title={title} artworkUrl={artworkUrl} previewUrl={previewUrl} />
         </div>
 
