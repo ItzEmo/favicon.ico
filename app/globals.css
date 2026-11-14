@@ -1305,3 +1305,184 @@
 @media (prefers-reduced-motion: reduce) {
   .submit-cta__onair, .submit-cta__button { animation: none; }
 }
+
+/* ---------- Live schedule ---------- */
+:root {
+  --show-cyan: oklch(0.82 0.14 205);
+  --show-pink: oklch(0.7 0.25 350);
+  --show-violet: oklch(0.68 0.2 295);
+  --show-amber: oklch(0.84 0.16 85);
+}
+
+:root [data-color="cyan"] { --c: var(--show-cyan); }
+:root [data-color="pink"] { --c: var(--show-pink); }
+:root [data-color="violet"] { --c: var(--show-violet); }
+:root [data-color="amber"] { --c: var(--show-amber); }
+
+.sched-stage {
+  min-height: calc(100dvh - 4rem);
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, color-mix(in oklch, var(--show-pink) 80%, transparent) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 78% 9%, color-mix(in oklch, var(--show-cyan) 80%, transparent) 50%, transparent 51%),
+    radial-gradient(1px 1px at 33% 62%, color-mix(in oklch, var(--foreground) 60%, transparent) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 88% 44%, color-mix(in oklch, var(--show-pink) 70%, transparent) 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 30%, color-mix(in oklch, var(--foreground) 50%, transparent) 50%, transparent 51%),
+    radial-gradient(1px 1px at 6% 72%, color-mix(in oklch, var(--show-cyan) 70%, transparent) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 66% 86%, color-mix(in oklch, var(--foreground) 50%, transparent) 50%, transparent 51%),
+    linear-gradient(180deg, color-mix(in oklch, var(--background) 70%, var(--show-violet) 12%), var(--background) 70%);
+  background-size: 420px 420px, 380px 380px, 300px 300px, 460px 460px, 260px 260px, 340px 340px, 500px 500px, 100% 100%;
+}
+
+.sched-title {
+  text-shadow: 0 0 24px color-mix(in oklch, var(--show-violet) 45%, transparent);
+}
+
+.sched-dayhead {
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 75%, transparent);
+}
+.sched-dayhead--today {
+  border-color: var(--primary);
+  box-shadow: 0 0 16px color-mix(in oklch, var(--primary) 45%, transparent);
+}
+
+.sched-card {
+  --c: var(--show-violet);
+  border: 2px solid var(--c);
+  background: color-mix(in oklch, var(--background) 88%, var(--c));
+  box-shadow:
+    0 0 14px color-mix(in oklch, var(--c) 40%, transparent),
+    inset 0 0 18px color-mix(in oklch, var(--c) 14%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.25s ease, filter 0.25s ease;
+}
+button.sched-card:hover,
+button.sched-card:focus-visible {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 0 28px color-mix(in oklch, var(--c) 65%, transparent),
+    inset 0 0 24px color-mix(in oklch, var(--c) 22%, transparent);
+}
+.sched-card[data-dim="true"],
+.sched-chip[data-dim="true"] {
+  opacity: 0.22;
+  filter: saturate(0.3);
+}
+.sched-card__icon {
+  color: color-mix(in oklch, var(--muted-foreground) 55%, var(--c));
+  filter: drop-shadow(0 0 6px color-mix(in oklch, var(--c) 45%, transparent));
+  transition: transform 0.25s ease;
+}
+button.sched-card:hover .sched-card__icon {
+  transform: rotate(-8deg) scale(1.1);
+}
+.sched-card__name {
+  color: var(--c);
+}
+
+.sched-recharge {
+  border: 2px dashed var(--border);
+  background: color-mix(in oklch, var(--card) 45%, transparent);
+  transition: border-color 0.2s ease;
+}
+.sched-recharge:hover,
+.sched-recharge:focus-visible {
+  border-color: var(--muted-foreground);
+}
+
+.sched-cell {
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 65%, transparent);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.sched-cell:hover,
+.sched-cell:focus-visible {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  outline: none;
+}
+.sched-cell--today {
+  border-color: var(--primary);
+  box-shadow: 0 0 18px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+.sched-chip {
+  --c: var(--show-violet);
+  border: 1px solid color-mix(in oklch, var(--c) 70%, transparent);
+  background: color-mix(in oklch, var(--background) 80%, var(--c));
+  transition: opacity 0.25s ease;
+}
+
+.sched-legend__swatch {
+  background: var(--c);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--c) 60%, transparent);
+}
+.sched-editor-row {
+  border-left: 3px solid var(--c);
+}
+
+@keyframes sched-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.sched-reveal {
+  animation: sched-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sched-mascot {
+  position: absolute;
+  display: block;
+  height: 15rem;
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.sched-mascot__img {
+  filter: drop-shadow(0 10px 24px color-mix(in oklch, var(--background) 80%, transparent));
+}
+.sched-mascot--tl { left: -2.5rem; top: 1.5rem; transform: rotate(8deg); }
+.sched-mascot--tr { right: -2rem; top: 1rem; transform: rotate(-6deg); }
+.sched-mascot--r { right: -3.5rem; top: 46%; height: 13rem; transform: rotate(-10deg); }
+.sched-mascot--bl { left: -1.5rem; bottom: -2rem; }
+.sched-mascot--b { left: 50%; bottom: -3rem; height: 14rem; transform: translateX(-50%); }
+.sched-mascot--br { right: -1rem; bottom: -2.5rem; }
+
+.sched-mascot--tl[data-active] { transform: rotate(2deg) translateX(1.5rem); }
+.sched-mascot--tr[data-active] { transform: rotate(0deg) translateX(-1.5rem); }
+.sched-mascot--r[data-active] { transform: rotate(-4deg) translateX(-2rem); }
+.sched-mascot--bl[data-active],
+.sched-mascot--br[data-active] { transform: translateY(-1.5rem); }
+.sched-mascot--b[data-active] { transform: translateX(-50%) translateY(-1.5rem); }
+
+.sched-mascot__bubble {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 1;
+  width: max-content;
+  max-width: 12rem;
+  translate: -50% 0.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--foreground);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, translate 0.2s ease;
+}
+.sched-mascot--tl .sched-mascot__bubble,
+.sched-mascot--tr .sched-mascot__bubble { top: 100%; bottom: auto; }
+.sched-mascot[data-active] .sched-mascot__bubble {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+@media (max-width: 1023px) {
+  .sched-mascot--tl { height: 9rem; left: -2rem; top: 0.5rem; }
+  .sched-mascot--tr { height: 9rem; right: -1.75rem; top: 0.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sched-reveal { animation: none; }
+  .sched-card, .sched-mascot, .sched-cell { transition: none; }
+}
