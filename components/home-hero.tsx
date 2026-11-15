@@ -4,14 +4,6 @@ import { Zap, UserPlus, Users, BadgeCheck, Tv, ChevronDown } from "lucide-react"
 import { LiveNowBadge } from "@/components/live-now-badge"
 import { SessionSubmissionsCounter } from "@/components/session-submissions-counter"
 
-// "BUILT FOR THE COMMUNITY" rendered with alternating neon tones for a flickering-sign feel.
-const TITLE_WORDS: { text: string; tones: string[] }[] = [
-  { text: "BUILT", tones: ["text-purple-400", "text-violet-500", "text-fuchsia-300", "text-violet-500", "text-fuchsia-500"] },
-  { text: "FOR", tones: ["text-fuchsia-300", "text-purple-400", "text-violet-500"] },
-  { text: "THE", tones: ["text-violet-500", "text-fuchsia-300", "text-purple-400"] },
-  { text: "COMMUNITY", tones: ["text-fuchsia-500", "text-violet-500", "text-fuchsia-300", "text-purple-400", "text-violet-500", "text-fuchsia-300", "text-purple-400", "text-fuchsia-500", "text-violet-500"] },
-]
-
 const FEATURES = [
   { icon: Users, label: "Artists from every genre" },
   { icon: BadgeCheck, label: "The truth. Every time." },
@@ -20,7 +12,7 @@ const FEATURES = [
 
 export function HomeHero() {
   return (
-    <section className="relative flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center overflow-hidden bg-background px-4 py-14 text-center">
+    <section className="relative flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center overflow-hidden px-4 py-14 text-center">
       {/* grid + glow backdrop */}
       <div
         aria-hidden="true"
@@ -50,16 +42,19 @@ export function HomeHero() {
         />
 
         {/* Title */}
-        <h1 className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-2xl font-black uppercase tracking-[0.35em] sm:text-4xl">
-          {TITLE_WORDS.map((word) => (
-            <span key={word.text} className="inline-flex">
-              {word.text.split("").map((ch, i) => (
-                <span key={i} className={word.tones[i % word.tones.length]}>
-                  {ch}
-                </span>
-              ))}
-            </span>
-          ))}
+        <h1 className="flex w-full justify-center">
+          <span className="sr-only">Built for the community</span>
+          {/* Cropped to the lettering; mix-blend-screen drops the pure-black backdrop into the page */}
+          <span aria-hidden="true" className="relative block aspect-[1672/300] w-[min(92vw,600px)] overflow-hidden">
+            <Image
+              src="/images/built-for-the-community.png"
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 652px) 92vw, 600px"
+              className="pointer-events-none select-none object-cover mix-blend-screen"
+            />
+          </span>
         </h1>
 
         {/* Live badge */}
