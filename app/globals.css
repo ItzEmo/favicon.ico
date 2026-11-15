@@ -214,37 +214,6 @@
   background-attachment: fixed;
 }
 
-.electric-surface::before,
-.electric-surface::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* Looping purple smoke (crossfade-interpolated from the 9-frame GIF to ~33fps); screen blend melts its black backdrop into the page */
-.electric-surface::before {
-  background-image: url("/images/purple-smoke-bg.webp");
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  mix-blend-mode: screen;
-  opacity: 0.55;
-  will-change: opacity;
-}
-
-/* Soft scrim keeps body copy readable over the brightest smoke */
-.electric-surface::after {
-  background-image: radial-gradient(70% 55% at 50% 45%, oklch(0.12 0.03 295 / 0.45), transparent 75%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .electric-surface::before {
-    opacity: 0.35;
-  }
-}
-
 @keyframes live-eq {
   0%, 100% { transform: scaleY(0.35); }
   50% { transform: scaleY(1); }
